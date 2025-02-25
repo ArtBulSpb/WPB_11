@@ -53,13 +53,14 @@ namespace WPB_11
             decreaseButton.Click += DecreaseButton_Click;
 
             // Устанавливаем размер UserControl с учетом обводки
-            this.Size = new Size(textBox.Width + increaseButton.Width + 20, decreaseButton.Bottom + 25); // Увеличиваем размер контрола
+            this.Size = new Size(textBox.Width + increaseButton.Width + 30, decreaseButton.Bottom + 25); // Увеличиваем размер контрола
 
-            // Добавляем компоненты в UserControl (лейбл добавляется последним)
+            // Добавляем компоненты в UserControl
             this.Controls.Add(textBox);
             this.Controls.Add(increaseButton);
             this.Controls.Add(decreaseButton);
-            this.Controls.Add(label); // Лейбл добавляется последним, чтобы быть поверх других элементов
+            // Добавляем лейбл последним, чтобы он был поверх других элементов
+            this.Controls.Add(label);
 
             // Устанавливаем стиль скругленных краев
             this.Paint += CTextBox_Paint;
@@ -83,6 +84,7 @@ namespace WPB_11
             e.Graphics.DrawPath(new Pen(Color.Gray), path); // Рисуем границу с отступами
         }
 
+
         private void IncreaseButton_Click(object sender, EventArgs e)
         {
             if (double.TryParse(textBox.Text, out double coefficient))
@@ -91,6 +93,7 @@ namespace WPB_11
                 textBox.Text = coefficient.ToString(); // Обновляем текстовое поле
             }
         }
+
         private void DecreaseButton_Click(object sender, EventArgs e)
         {
             if (double.TryParse(textBox.Text, out double coefficient))
@@ -100,4 +103,5 @@ namespace WPB_11
             }
         }
     }
+
 }

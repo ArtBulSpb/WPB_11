@@ -20,30 +20,29 @@ namespace WPB_11
             {
                 Text = labelText,
                 AutoSize = true,
+                Location = new Point(10, 5),
                 ForeColor = Color.Black,
                 BackColor = Color.Transparent // Делаем фон метки прозрачным
             };
 
             textBox = new TransparentTextBox
             {
-                Width = 140,
+                Width = 120,
                 Multiline = true, // Позволяем многострочный ввод
                 BorderStyle = BorderStyle.None, // Убираем стандартную рамку
                 Height = 50, // Устанавливаем высоту текстового поля
                 TextAlign = HorizontalAlignment.Left,
+                Location = new Point(10, label.Height + 5),
                 MaxLength = 100, // Ограничиваем длину текста
                 BackColor = Color.Transparent
             };
 
             // Настройка внешнего вида
             this.BackColor = Color.White; // Цвет фона
-            this.Padding = new Padding(5);
-            this.Margin = new Padding(15);
+            this.Height = 90;
             this.Controls.Add(label);
             this.Controls.Add(textBox);
 
-            // Установка позиции текстового поля под меткой
-            textBox.Location = new Point(0, label.Height + 5);
 
             // Установка обработчика для рисования обводки
             this.Paint += RoundedTextBox_Paint;
@@ -70,29 +69,24 @@ namespace WPB_11
 
         private void RoundedTextBox_Paint(object sender, PaintEventArgs e)
         {
-            // Уменьшаем размеры рамки
-            int padding = 0; // Отступ для рамки
-            Rectangle textBoxBounds = new Rectangle(
-                padding, // Сдвигаем вправо
-                label.Height + 5 + padding, // Сдвигаем вниз
-                this.Width - 2 * padding, // Уменьшаем ширину
-                textBox.Height + 10 // Высота остается прежней
-            );
+            int padding = 3; // Отступ для границы
 
-            // Рисуем закругленные углы
-            int radius = 10; // Радиус закругления
-            using (GraphicsPath path = new GraphicsPath())
-            {
-                path.StartFigure();
-                path.AddArc(textBoxBounds.X, textBoxBounds.Y, radius+100, radius, 180, 90);
-                path.AddArc(textBoxBounds.Right - radius, textBoxBounds.Y, radius+ 100, radius, 270, 90);
-                path.AddArc(textBoxBounds.Right - radius, textBoxBounds.Bottom - radius, radius, radius, 0, 90);
-                path.AddArc(textBoxBounds.X, textBoxBounds.Bottom - radius, radius, radius, 90, 90);
-                path.CloseFigure();
+            // Рисуем фон
+            e.Graphics.FillRectangle(new SolidBrush(Color.White), this.ClientRectangle);
 
-                e.Graphics.DrawPath(new Pen(Color.FromArgb(217, 217, 217), 2), path); // Рисуем обводку вокруг текстового поля
-            }
+            // Рисуем скругленные края с отступами
+            var path = new System.Drawing.Drawing2D.GraphicsPath();
+            path.AddArc(padding, padding, 10, 10, 180, 90); // Левый верхний угол
+            path.AddArc(this.Width - 10 - padding, padding, 10, 10, 270, 90); // Правый верхний угол
+            path.AddArc(this.Width - 10 - padding, this.Height - 10 - padding, 10, 10, 0, 90); // Правый нижний угол
+            path.AddArc(padding, this.Height - 10 - padding, 10, 10, 90, 90); // Левый нижний угол
+            path.CloseFigure();
+
+            e.Graphics.DrawPath(new Pen(Color.Gray), path); // Рисуем границу с отступами
         }
+
+
+
 
 
         public string PlaceholderText
