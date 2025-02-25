@@ -11,12 +11,10 @@
 
   <ItemGroup>
     <None Remove="arrow.PNG" />
-    <None Remove="Properties\VPBW_Icon.ico" />
   </ItemGroup>
 
   <ItemGroup>
     <EmbeddedResource Include="arrow.PNG" />
-    <EmbeddedResource Include="Properties\VPBW_Icon.ico" />
   </ItemGroup>
 
   <ItemGroup>

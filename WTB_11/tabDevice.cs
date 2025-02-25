@@ -58,7 +58,7 @@ namespace WPB_11
                 // Устанавливаем фиксированную высоту для строки с dateTimePanel
                 mainLayout.RowStyles.Add(new RowStyle(SizeType.AutoSize)); // Высота для dateTimePanel
                 mainLayout.RowStyles.Add(new RowStyle(SizeType.AutoSize)); // Для списка лебедок
-                mainLayout.RowStyles.Add(new RowStyle(SizeType.Absolute, 50)); 
+                mainLayout.RowStyles.Add(new RowStyle(SizeType.AutoSize)); 
                 // Задаем размеры колонок
                 mainLayout.ColumnStyles.Add(new ColumnStyle(SizeType.AutoSize));
                 mainLayout.ColumnStyles.Add(new ColumnStyle(SizeType.Absolute, 200)); // Фиксированная ширина для правой колонки
@@ -66,7 +66,7 @@ namespace WPB_11
 
 
                 // Создаем панель для даты и времени
-                FlowLayoutPanel dateTimePanel = new FlowLayoutPanel
+                FlowLayoutPanel dateTimeDevice = new FlowLayoutPanel
                 {
                     Dock = DockStyle.Top,
                     AutoSize = true,
@@ -75,11 +75,33 @@ namespace WPB_11
                     Margin = new Padding(0, 0, 0, 5)
                 };
                 // Добавляем элементы в dateTimePanel
-                dateTimePanel.Controls.Add(deviceTime);
-                dateTimePanel.Controls.Add(arrowButton);
-                dateTimePanel.Controls.Add(systemTime);
+                dateTimeDevice.Controls.Add(deviceTime);
+
+                FlowLayoutPanel dateTimeButton = new FlowLayoutPanel
+                {
+                    Dock = DockStyle.Top,
+                    AutoSize = true,
+                    WrapContents = false,
+                    FlowDirection = FlowDirection.LeftToRight,
+                    Margin = new Padding(0, 0, 0, 5)
+                };
+                // Добавляем элементы в dateTimePanel
+                dateTimeButton.Controls.Add(arrowButton);
+
+                FlowLayoutPanel dateTimeSystem = new FlowLayoutPanel
+                {
+                    Dock = DockStyle.Top,
+                    AutoSize = true,
+                    WrapContents = false,
+                    FlowDirection = FlowDirection.LeftToRight,
+                    Margin = new Padding(0, 0, 0, 5)
+                };
+                dateTimeSystem.Controls.Add(systemTime);
+
                 // Добавляем dateTimePanel в основное расположение (первая строка, первая колонка)
-                mainLayout.Controls.Add(dateTimePanel, 0, 0);
+                mainLayout.Controls.Add(dateTimeDevice, 0, 0);
+                mainLayout.Controls.Add(dateTimeButton, 1, 0);
+                mainLayout.Controls.Add(dateTimeSystem, 2, 0);
 
 
                 FlowLayoutPanel winchesFlowPanel = new FlowLayoutPanel

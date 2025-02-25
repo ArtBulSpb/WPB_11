@@ -92,7 +92,7 @@ namespace WPB_11
             this.Controls.Add(tabPanel);
 
             // Инициализируем содержимое для первой вкладки
-            ShowTabContent(TabNames.Length); // Показать содержимое последней добавленной вкладки (первая по порядку)
+            ShowTabContent(1); // Показать содержимое последней добавленной вкладки (первая по порядку)
         }
 
         private void TabButton_Click(object sender, EventArgs e)
