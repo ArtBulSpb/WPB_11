@@ -20,13 +20,17 @@ namespace WPB_11
                     MessageBox.Show("Установка времени...");
                 };
 
-                Label labelWinches = new Label { Text = "Список лебедок:", AutoSize = true };
-                ListBox listBoxWinches = new ListBox { Width = 200, Height = 100 };
-
-                for (int i = 1; i <= TabNames.Length; i++)
+                CustomCheckedListBox customCheckedListBoxWinches = new CustomCheckedListBox("Список лебедок:")
                 {
-                    listBoxWinches.Items.Add($"Лебедка {i}");
+                    Location = new Point(10, 10)
+                };
+
+                // Добавление элементов в список
+                for (int i = 1; i <= 10; i++)
+                {
+                    customCheckedListBoxWinches.AddItem($"Элемент {i}");
                 }
+                CTextBox cTextBox = new CTextBox("Kar");
 
                 var sensorsCountField = new roundedTextBox("Количество датчиков:") { PlaceholderText = "значение появляется при подключении прибора" };
                 var effortOnSensorsField = new roundedTextBox("Усилие на датчиках:") { PlaceholderText = "значение появляется при подключении прибора" };
@@ -53,11 +57,11 @@ namespace WPB_11
                 flowLayoutPanel.Controls.Add(loadPercentageField);
                 flowLayoutPanel.Controls.Add(windSpeedField);
                 flowLayoutPanel.Controls.Add(temperatureInBlockField);
-                flowLayoutPanel.Controls.Add(labelWinches);
-                flowLayoutPanel.Controls.Add(listBoxWinches);
+                flowLayoutPanel.Controls.Add(customCheckedListBoxWinches);
                 flowLayoutPanel.Controls.Add(arrowButton);
                 flowLayoutPanel.Controls.Add(labelErrors);
                 flowLayoutPanel.Controls.Add(textBoxErrors);
+                flowLayoutPanel.Controls.Add(cTextBox);
 
                 // Добавляем flowLayoutPanel в contentPanel
                 contentPanel.Controls.Add(flowLayoutPanel);
