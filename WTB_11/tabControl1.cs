@@ -14,8 +14,7 @@ namespace WPB_11
         private Panel contentPanel;
         private Button selectedButton; // Для отслеживания выбранной кнопки
         private Panel separator; // Панель-разделитель
-
-        // Названия вкладок
+                                 // Названия вкладок
         public string[] TabNames { get; set; }
 
         public tabControl1(string[] tabNames)
@@ -114,14 +113,23 @@ namespace WPB_11
                 selectedButton = (Button)sender; // Запоминаем текущую выбранную кнопку
                 selectedButton.BackColor = Color.FromArgb(224, 224, 224); // Устанавливаем новый цвет для выбранной кнопки (F7F7F7)
             }
-            
+
         }
 
 
         private void ShowTabContent(int index)
         {
-            tabDevice tabd = new tabDevice();
-            tabd.ShowTabContent(contentPanel, index, TabNames);
+            switch (index)
+            {
+                case 1:
+                    TabCurrentValue tabd = new TabCurrentValue();
+                    tabd.ShowTabContent(contentPanel, index, TabNames);
+                    break;
+
+                case 2:
+
+                    break;
+            }
         }
     }
 }

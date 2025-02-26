@@ -10,30 +10,7 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <None Remove="arrow.PNG" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <EmbeddedResource Include="arrow.PNG" />
-  </ItemGroup>
-
-  <ItemGroup>
     <PackageReference Include="System.Drawing.Common" Version="9.0.2" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <Compile Update="Properties\Resource1.Designer.cs">
-      <DesignTime>True</DesignTime>
-      <AutoGen>True</AutoGen>
-      <DependentUpon>Resource1.resx</DependentUpon>
-    </Compile>
-  </ItemGroup>
-
-  <ItemGroup>
-    <EmbeddedResource Update="Properties\Resource1.resx">
-      <Generator>ResXFileCodeGenerator</Generator>
-      <LastGenOutput>Resource1.Designer.cs</LastGenOutput>
-    </EmbeddedResource>
   </ItemGroup>
 
 </Project>

@@ -13,9 +13,9 @@ namespace WPB_11
 
         private static void LoadCustomFonts()
         {
-            privateFonts.AddFontFile("G:\\VisualStudio\\repos\\WTB_11\\WTB_11\\Inter-Medium.otf"); // Путь к файлу шрифта
-            privateFonts.AddFontFile("G:\\VisualStudio\\repos\\WTB_11\\WTB_11\\Inter-Regular.otf"); // Путь к файлу полужирного шрифта
-            privateFonts.AddFontFile("G:\\VisualStudio\\repos\\WTB_11\\WTB_11\\Inter-SemiBold.otf");
+            privateFonts.AddFontFile("G:\\VisualStudio\\repos\\WTB_11\\WTB_11\\Fonts\\Inter-Medium.otf"); // Путь к файлу шрифта
+            privateFonts.AddFontFile("G:\\VisualStudio\\repos\\WTB_11\\WTB_11\\Fonts\\Inter-Regular.otf"); // Путь к файлу полужирного шрифта
+            privateFonts.AddFontFile("G:\\VisualStudio\\repos\\WTB_11\\WTB_11\\Fonts\\Inter-SemiBold.otf");
         }
 
         public static Font GetMediumFont(float size)
