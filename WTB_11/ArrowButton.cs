@@ -6,20 +6,17 @@ using static System.Windows.Forms.VisualStyles.VisualStyleElement.ScrollBar;
 namespace WPB_11;
 public class ArrowButton : Button
 {
-    public ArrowButton()
+    public ArrowButton(string path, int height, int width)
     {
-        InitializeArrowButton();
-    }
-
-    private void InitializeArrowButton() {
-        this.Image = Image.FromFile("G:\\VisualStudio\\repos\\WTB_11\\WTB_11\\Img\\arrow.PNG");
-        this.Height = 90;
-        this.Width = 200;
+        this.Image = Image.FromFile(path);
+        this.Height = height;
+        this.Width = width;
         this.FlatStyle = FlatStyle.Flat;
         this.FlatAppearance.BorderSize = 0; // Убираем обводку
         this.FlatAppearance.MouseOverBackColor = Color.Transparent; // Убираем цвет фона при наведении
         this.FlatAppearance.MouseDownBackColor = Color.Transparent; // Убираем цвет фона при нажатии
     }
+
 }
 
 

@@ -97,7 +97,7 @@ namespace WPB_11
         private void TabButton_Click(object sender, EventArgs e)
         {
             selectedButton = (Button)sender;
-            ArrowButton arrowButton = new ArrowButton();
+            ArrowButton arrowButton = new ArrowButton("G:\\VisualStudio\\repos\\WTB_11\\WTB_11\\Img\\arrow.PNG", 90, 200);
             if (selectedButton != arrowButton)
             {
                 // Получаем индекс выбранной вкладки из тега кнопки
@@ -122,12 +122,13 @@ namespace WPB_11
             switch (index)
             {
                 case 1:
-                    TabCurrentValue tabd = new TabCurrentValue();
-                    tabd.ShowTabContent(contentPanel, index, TabNames);
+                    TabCurrentValue tabc = new TabCurrentValue();
+                    tabc.ShowTabContent(contentPanel, TabNames);
                     break;
 
                 case 2:
-
+                    TabDevice tabd = new TabDevice();
+                    tabd.ShowTabContent(contentPanel, TabNames);
                     break;
             }
         }
