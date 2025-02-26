@@ -4,6 +4,7 @@ using System.Drawing.Drawing2D;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using System.Drawing.Text;
 
 namespace WPB_11
 {
@@ -15,6 +16,7 @@ namespace WPB_11
 
         public roundedTextBox(string labelText)
         {
+
             // Инициализация элементов
             label = new Label
             {
@@ -22,7 +24,8 @@ namespace WPB_11
                 AutoSize = true,
                 Location = new Point(10, 5),
                 ForeColor = Color.Black,
-                BackColor = Color.Transparent // Делаем фон метки прозрачным
+                BackColor = Color.Transparent, // Делаем фон метки прозрачным
+                Font = FontManager.GetSemiBoldFont(10), // Устанавливаем 
             };
 
             textBox = new TransparentTextBox
@@ -34,12 +37,14 @@ namespace WPB_11
                 TextAlign = HorizontalAlignment.Left,
                 Location = new Point(10, label.Height + 5),
                 MaxLength = 100, // Ограничиваем длину текста
-                BackColor = Color.Transparent
+                BackColor = Color.Transparent,
+                Font = FontManager.GetRegularFont(10),
             };
 
             // Настройка внешнего вида
             this.BackColor = Color.White; // Цвет фона
             this.Height = 90;
+            this.Width = 200;
             this.Controls.Add(label);
             this.Controls.Add(textBox);
 

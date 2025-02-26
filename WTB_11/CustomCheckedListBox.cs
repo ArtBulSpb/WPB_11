@@ -17,7 +17,8 @@ namespace WPB_11
                 Text = labelText,
                 AutoSize = true,
                 ForeColor = Color.Black,
-                BackColor = Color.Transparent // Делаем фон метки прозрачным
+                BackColor = Color.Transparent, // Делаем фон метки прозрачным
+                Font = FontManager.GetSemiBoldFont(10),
             };
 
             // Инициализация кастомного списка
@@ -25,7 +26,8 @@ namespace WPB_11
             {
                 Width = 400,
                 Height = 100,
-                Location = new Point(0, label.Height + 5)
+                Location = new Point(0, label.Height + 5),
+                Font = FontManager.GetRegularFont(10),
             };
 
             // Настройка внешнего вида

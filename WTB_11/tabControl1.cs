@@ -112,7 +112,7 @@ namespace WPB_11
                 }
 
                 selectedButton = (Button)sender; // Запоминаем текущую выбранную кнопку
-                selectedButton.BackColor = Color.FromArgb(247, 247, 247); // Устанавливаем новый цвет для выбранной кнопки (F7F7F7)
+                selectedButton.BackColor = Color.FromArgb(224, 224, 224); // Устанавливаем новый цвет для выбранной кнопки (F7F7F7)
             }
             
         }

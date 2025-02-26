@@ -12,6 +12,7 @@ namespace WPB_11
         private TextBox textBox;
         private Button increaseButton;
         private Button decreaseButton;
+        private string placeholderText;
 
         public CTextBox(string labelText)
         {
@@ -20,23 +21,28 @@ namespace WPB_11
             {
                 Text = labelText,
                 AutoSize = true,
-                Location = new Point(5, 5), // Положение лейбла
+                Location = new Point(5, 5),
+                Font = FontManager.GetSemiBoldFont(10), // Устанавливаем // Положение лейбла
                 BackColor = Color.Transparent // Прозрачный фон для лейбла
             };
 
             textBox = new TextBox
             {
-                Location = new Point(5, label.Height + 10), // Положение текстового поля под лейблом
-                Width = 100, // Ширина текстового поля
-                Height = 20, // Высота текстового поля
-                BorderStyle = BorderStyle.None // Убираем стандартную обводку
+                Width = 120,
+                Multiline = true, // Позволяем многострочный ввод
+                BorderStyle = BorderStyle.None, // Убираем стандартную рамку
+                Height = 50, // Устанавливаем высоту текстового поля
+                TextAlign = HorizontalAlignment.Left,
+                Location = new Point(10, label.Height + 5),
+                MaxLength = 100, // Ограничиваем длину текста
+                Font = FontManager.GetRegularFont(10),
             };
 
             increaseButton = new Button
             {
                 Text = "+",
                 Size = new Size(20, 20), // Размер кнопки для удобства
-                Location = new Point(textBox.Right + 5, textBox.Top) // Положение кнопки увеличения
+                Location = new Point(textBox.Right + 25, textBox.Top) // Положение кнопки увеличения
             };
             increaseButton.FlatStyle = FlatStyle.Flat; // Убираем стандартное выделение
 
@@ -46,14 +52,14 @@ namespace WPB_11
             {
                 Text = "-",
                 Size = new Size(20, 20), // Размер кнопки для удобства
-                Location = new Point(textBox.Right + 5, increaseButton.Bottom + 5) // Положение кнопки уменьшения под кнопкой увеличения
+                Location = new Point(textBox.Right + 25, increaseButton.Bottom + 5) // Положение кнопки уменьшения под кнопкой увеличения
             };
             decreaseButton.FlatStyle = FlatStyle.Flat; // Убираем стандартное выделение
 
             decreaseButton.Click += DecreaseButton_Click;
 
             // Устанавливаем размер UserControl с учетом обводки
-            this.Size = new Size(textBox.Width + increaseButton.Width + 30, decreaseButton.Bottom + 25); // Увеличиваем размер контрола
+            this.Size = new Size(textBox.Width + increaseButton.Width + 60, decreaseButton.Bottom + 25); // Увеличиваем размер контрола
 
             // Добавляем компоненты в UserControl
             this.Controls.Add(textBox);
@@ -64,6 +70,24 @@ namespace WPB_11
 
             // Устанавливаем стиль скругленных краев
             this.Paint += CTextBox_Paint;
+
+            textBox.Enter += (s, e) =>
+            {
+                if (textBox.Text == placeholderText)
+                {
+                    textBox.Text = "";
+                    textBox.ForeColor = Color.Black; // Возвращаем черный цвет при вводе
+                }
+            };
+
+            textBox.Leave += (s, e) =>
+            {
+                if (string.IsNullOrEmpty(textBox.Text))
+                {
+                    textBox.Text = placeholderText;
+                    textBox.ForeColor = Color.Gray; // Устанавливаем цвет подсказки
+                }
+            };
         }
 
         private void CTextBox_Paint(object sender, PaintEventArgs e)
@@ -100,6 +124,35 @@ namespace WPB_11
             {
                 coefficient -= 1; // Уменьшаем коэффициент на 1
                 textBox.Text = coefficient.ToString(); // Обновляем текстовое поле
+            }
+        }
+
+        public string PlaceholderText
+        {
+            get => placeholderText;
+            set
+            {
+                placeholderText = value;
+                textBox.Text = placeholderText;
+                textBox.ForeColor = Color.Gray; // Устанавливаем цвет подсказки
+            }
+        }
+
+        public string Text
+        {
+            get => textBox.Text == placeholderText ? string.Empty : textBox.Text;
+            set
+            {
+                textBox.Text = value;
+                if (string.IsNullOrEmpty(value))
+                {
+                    textBox.Text = placeholderText;
+                    textBox.ForeColor = Color.Gray; // Устанавливаем цвет подсказки
+                }
+                else
+                {
+                    textBox.ForeColor = Color.Black; // Устанавливаем цвет текста
+                }
             }
         }
     }

@@ -21,7 +21,7 @@ namespace WPB_11
                     MessageBox.Show("Установка времени...");
                 };
 
-                CustomCheckedListBox customCheckedListBoxWinches = new CustomCheckedListBox("Список лебедок:")
+                CustomCheckedListBox customCheckedListBoxWinches = new CustomCheckedListBox("Список лебедок(1-8):")
                 {
                     Location = new Point(10, 10)
                 };
@@ -39,7 +39,7 @@ namespace WPB_11
                 var totalEffortField = new roundedTextBox("Суммарное усилие:") { PlaceholderText = "значение появляется при подключении прибора" };
                 var cargoMassField = new roundedTextBox("Масса груза:") { PlaceholderText = "значение появляется при подключении прибора" };
                 var loadPercentageField = new roundedTextBox("Процент загрузки:") { PlaceholderText = "значение появляется при подключении прибора" };
-                var windSpeedField = new roundedTextBox("Скорость ветра:") { PlaceholderText = "значение появляется при подключении прибора" };
+                var windSpeedField = new CTextBox("Скорость ветра:") { PlaceholderText = "Введите значение" };
                 var temperatureInBlockField = new roundedTextBox("Температура в блоке:") { PlaceholderText = "значение появляется при подключении прибора" };
                 var systemTime = new roundedTextBox("Дата и время в системе") { PlaceholderText = "" };
                 var deviceTime = new roundedTextBox("Дата и время в приборе") { PlaceholderText = "значение появляется при подключении прибора" };
@@ -61,8 +61,8 @@ namespace WPB_11
                 mainLayout.RowStyles.Add(new RowStyle(SizeType.AutoSize)); 
                 // Задаем размеры колонок
                 mainLayout.ColumnStyles.Add(new ColumnStyle(SizeType.AutoSize));
-                mainLayout.ColumnStyles.Add(new ColumnStyle(SizeType.Absolute, 200)); // Фиксированная ширина для правой колонки
-                mainLayout.ColumnStyles.Add(new ColumnStyle(SizeType.Absolute, 50)); // Фиксированная ширина для правой колонки
+                mainLayout.ColumnStyles.Add(new ColumnStyle(SizeType.AutoSize)); // Фиксированная ширина для правой колонки
+                mainLayout.ColumnStyles.Add(new ColumnStyle(SizeType.AutoSize)); // Фиксированная ширина для правой колонки
 
 
                 // Создаем панель для даты и времени
@@ -98,11 +98,20 @@ namespace WPB_11
                 };
                 dateTimeSystem.Controls.Add(systemTime);
 
+                Panel separator = new Panel // отделяет дату и время от остального
+                {
+                    Height = 1, // Высота разделителя
+                    Dock = DockStyle.Top, // Расположение сверху
+                    BackColor = Color.FromArgb(224, 224, 224) // Цвет E0E0E0
+                };
+
                 // Добавляем dateTimePanel в основное расположение (первая строка, первая колонка)
                 mainLayout.Controls.Add(dateTimeDevice, 0, 0);
                 mainLayout.Controls.Add(dateTimeButton, 1, 0);
                 mainLayout.Controls.Add(dateTimeSystem, 2, 0);
 
+                mainLayout.Controls.Add(separator, 0, 1); // Вставляем разделитель в следующую строку
+                mainLayout.SetColumnSpan(separator, 3); // Занимаем все три колонки
 
                 FlowLayoutPanel winchesFlowPanel = new FlowLayoutPanel
                 {
@@ -116,7 +125,7 @@ namespace WPB_11
                 winchesFlowPanel.Controls.Add(customCheckedListBoxWinches);
 
                 // Добавляем winchesPanel в основное расположение (вторая строка, первая колонка)
-                mainLayout.Controls.Add(winchesFlowPanel, 0, 1);
+                mainLayout.Controls.Add(winchesFlowPanel, 1, 1);
 
                 // Создаем панель для правых элементов
                 FlowLayoutPanel winchesParamPanel = new FlowLayoutPanel
@@ -133,7 +142,7 @@ namespace WPB_11
                 winchesParamPanel.Controls.Add(cargoMassField);
                 winchesParamPanel.Controls.Add(loadPercentageField);
                 // Добавляем правую панель в основное расположение (вторая строка, вторая колонка)
-                mainLayout.Controls.Add(winchesParamPanel, 1, 1);
+                mainLayout.Controls.Add(winchesParamPanel, 2, 1);
 
                 FlowLayoutPanel deviceParamPanel = new FlowLayoutPanel
                 {
@@ -146,7 +155,7 @@ namespace WPB_11
                 deviceParamPanel.Controls.Add(temperatureInBlockField);
                 deviceParamPanel.Controls.Add(errors);
                 // Добавляем правую панель в основное расположение (вторая строка, вторая колонка)
-                mainLayout.Controls.Add(deviceParamPanel, 2, 1);
+                mainLayout.Controls.Add(deviceParamPanel, 3, 1);
 
 
 
