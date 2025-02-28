@@ -18,6 +18,7 @@ namespace WPB_11
             DataGridView parametersGridView = new DataGridView
             {
                 AutoSizeColumnsMode = DataGridViewAutoSizeColumnsMode.AllCells,
+                AutoSizeRowsMode = DataGridViewAutoSizeRowsMode.AllCells,
                 ReadOnly = false,
                 AllowUserToAddRows = false,
                 AllowUserToDeleteRows = false,
@@ -26,16 +27,21 @@ namespace WPB_11
                 SelectionMode = DataGridViewSelectionMode.FullRowSelect,
                 BackgroundColor = Color.White,
                 AllowUserToResizeColumns = false,
-                AllowUserToResizeRows = false
+                AllowUserToResizeRows = false,
+                BorderStyle = BorderStyle.None,
+                Dock = DockStyle.Fill,
+                Margin = new Padding(50, 5, 0, 0)
+
             };
 
             // Убираем стандартное выделение
-            parametersGridView.DefaultCellStyle.SelectionBackColor = Color.Transparent;
+            parametersGridView.DefaultCellStyle.SelectionBackColor = Color.White;
             parametersGridView.DefaultCellStyle.SelectionForeColor = Color.Black;
             parametersGridView.DefaultCellStyle.BackColor = Color.White;
 
+
             // Настраиваем столбцы
-            parametersGridView.Columns.Add("Index", "№");
+            parametersGridView.Columns.Add("Index", "Номер датчика");
             parametersGridView.Columns.Add(new DataGridViewComboBoxColumn
             {
                 HeaderText = "Датчик (название)",
@@ -50,8 +56,8 @@ namespace WPB_11
                 DataSource = new string[] { "Запрос 1", "Запрос 2", "Запрос 3" },
                 FlatStyle = FlatStyle.Flat
             });
-            parametersGridView.Columns.Add("loadPercentage", "Процент загрузки");
-            parametersGridView.Columns.Add("force", "Усилие");
+            parametersGridView.Columns.Add("loadPercentage", "Значение 1");
+            parametersGridView.Columns.Add("force", "Значение 2");
 
             // Пример данных для таблицы
             for (int i = 1; i <= 4; i++)
@@ -65,11 +71,11 @@ namespace WPB_11
             ArrowButton cargoEmptyImg = new ArrowButton("G:\\VisualStudio\\repos\\WTB_11\\WTB_11\\Img\\cargoEmpty.JPG", 50, 200);
 
 
-            var serialNumber = new TextBoxWithButton("Зав №") { PlaceholderText = "Скорость ветра (коэфф.)" };
+            var serialNumber = new TextBoxWithButton("Зав №") { PlaceholderText = "52" };
             var windAveraging = new TextBoxWithButton("Усреднение ветра") { PlaceholderText = "" };
             var labelSum = new Label()
             {
-                Text = "Общие значения",
+                Text = "Ветер",
                 AutoSize = true,
                 Location = new Point(10, 5),
                 ForeColor = Color.Black,
@@ -142,7 +148,7 @@ namespace WPB_11
                 Height = 1, // Высота разделителя
                 Dock = DockStyle.Top, // Расположение сверху
                 BackColor = Color.FromArgb(224, 224, 224), // Цвет E0E0E0
-                Margin = new Padding(0, 10, 0, 10)
+                Margin = new Padding(0, 0, 0, 10)
             };
             layoutPanel.Controls.Add(separator1, 0, 1);
             layoutPanel.SetColumnSpan(separator1, 5);
@@ -171,9 +177,9 @@ namespace WPB_11
             winche1ParamPanel.Controls.Add(coeffField1);
             winche1ParamPanel.Controls.Add(additivField1);
             winche1ParamPanel.Controls.Add(integrationField1);
-            winche1ParamPanel.Controls.Add(maxQField1);
-            winche1ParamPanel.Controls.Add(cargoMassField1);
-            winche1ParamPanel.Controls.Add(emptyButton1);
+            //winche1ParamPanel.Controls.Add(maxQField1);
+            //winche1ParamPanel.Controls.Add(cargoMassField1);
+            //winche1ParamPanel.Controls.Add(emptyButton1);
             layoutPanel.Controls.Add(winche1ParamPanel, 0, 2);
 
             // Лебедка 2
@@ -190,9 +196,9 @@ namespace WPB_11
             winche2ParamPanel.Controls.Add(coeffField2);
             winche2ParamPanel.Controls.Add(additivField2);
             winche2ParamPanel.Controls.Add(integrationField2);
-            winche2ParamPanel.Controls.Add(maxQField2);
-            winche2ParamPanel.Controls.Add(cargoMassField2);
-            winche2ParamPanel.Controls.Add(emptyButton2);
+            //winche2ParamPanel.Controls.Add(maxQField2);
+            //winche2ParamPanel.Controls.Add(cargoMassField2);
+            //winche2ParamPanel.Controls.Add(emptyButton2);
             // Добавляем правую панель в основное расположение (вторая строка, вторая колонка)
             layoutPanel.Controls.Add(winche2ParamPanel, 1, 2);
 
@@ -210,36 +216,40 @@ namespace WPB_11
             winche3ParamPanel.Controls.Add(coeffField3);
             winche3ParamPanel.Controls.Add(additivField3);
             winche3ParamPanel.Controls.Add(integrationField3);
-            winche3ParamPanel.Controls.Add(maxQField3);
-            winche3ParamPanel.Controls.Add(cargoMassField3);
-            winche3ParamPanel.Controls.Add(emptyButton3);
+            //winche3ParamPanel.Controls.Add(maxQField3);
+            //winche3ParamPanel.Controls.Add(cargoMassField3);
+            //winche3ParamPanel.Controls.Add(emptyButton3);
             // Добавляем правую панель в основное расположение (вторая строка, вторая колонка)
             layoutPanel.Controls.Add(winche3ParamPanel, 2, 2);
 
             FlowLayoutPanel sumPanel = new FlowLayoutPanel
             {
-                Dock = DockStyle.Fill,
+                Dock = DockStyle.Left, // Расположение слева
                 FlowDirection = FlowDirection.TopDown,
                 AutoSize = true,
                 WrapContents = false,
                 Margin = new Padding(0)
             };
             sumPanel.Controls.Add(labelSum);
-            sumPanel.Controls.Add(totalEffort);
-            sumPanel.Controls.Add(cargoMassField);
+            //sumPanel.Controls.Add(totalEffort);
+            //sumPanel.Controls.Add(cargoMassField);
             sumPanel.Controls.Add(windSpeedCoefficient);
-            sumPanel.Controls.Add(cargoEmptyImg);
+            //sumPanel.Controls.Add(serialNumber);
+            sumPanel.Controls.Add(windAveraging);
+            //sumPanel.Controls.Add(cargoEmptyImg);
             layoutPanel.Controls.Add(sumPanel, 4, 2);
+            layoutPanel.Controls.Add(serialNumber, 4, 0);
+
 
             // Добавляем текстовые поля в TableLayoutPanel
             layoutPanel.Controls.Add(parametersGridView, 0, 0); // Первое текстовое поле
-            layoutPanel.Controls.Add(serialNumber, 1, 0); // Второе текстовое поле
-            layoutPanel.Controls.Add(windAveraging, 2, 0); // DataGridView в третьем столбце
+            layoutPanel.SetColumnSpan(parametersGridView, 3);
 
             // Устанавливаем размеры столбцов
             layoutPanel.ColumnStyles.Add(new ColumnStyle(SizeType.AutoSize)); // Для первого текстового поля
             layoutPanel.ColumnStyles.Add(new ColumnStyle(SizeType.AutoSize)); // Для второго текстового поля
             layoutPanel.ColumnStyles.Add(new ColumnStyle(SizeType.AutoSize)); // Для DataGridView, который будет занимать оставшееся пространство
+            layoutPanel.ColumnStyles.Add(new ColumnStyle(SizeType.AutoSize));
 
             layoutPanel.RowStyles.Add(new RowStyle(SizeType.AutoSize)); // Для первого текстового поля
 
