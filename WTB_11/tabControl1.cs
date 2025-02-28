@@ -130,6 +130,16 @@ namespace WPB_11
                     TabDevice tabd = new TabDevice();
                     tabd.ShowTabContent(contentPanel, TabNames);
                     break;
+
+                case 3:
+                    tabCrane tabcrane = new tabCrane();
+                    tabcrane.ShowTabContent(contentPanel, TabNames);
+                    break;
+
+                case 4:
+                    LongInformTab longinf = new LongInformTab();
+                    longinf.ShowTabContent(contentPanel, TabNames);
+                    break;
             }
         }
     }
