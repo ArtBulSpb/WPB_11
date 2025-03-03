@@ -39,33 +39,42 @@ namespace WPB_11
             dataGridView.ColumnHeadersDefaultCellStyle.ForeColor = Color.Black; // Цвет текста заголовков
             dataGridView.ColumnHeadersDefaultCellStyle.SelectionBackColor = Color.White; // Цвет фона при выделении заголовков
             dataGridView.ColumnHeadersDefaultCellStyle.SelectionForeColor = Color.Black; // Цвет текста при выделении заголовков
+            dataGridView.DefaultCellStyle.Font = FontManager.GetRegularFont(10);
+            dataGridView.ColumnHeadersDefaultCellStyle.Font = FontManager.GetSemiBoldFont(12);
+
 
             // Настраиваем столбцы
             dataGridView.Columns.Add("Index", "№");
             dataGridView.Columns.Add("DateTime", "Дата/время");
-            dataGridView.Columns.Add("TempVPB", "Темп. ВПБ");
             dataGridView.Columns.Add("F1", "F1");
             dataGridView.Columns.Add("F2", "F2");
+            dataGridView.Columns.Add("F3", "F3");
             dataGridView.Columns.Add("Q1", "Q1");
             dataGridView.Columns.Add("Q2", "Q2");
+            dataGridView.Columns.Add("Q3", "Q3");
             dataGridView.Columns.Add("M1", "M1");
             dataGridView.Columns.Add("M2", "M2");
+            dataGridView.Columns.Add("M3", "M3");
             dataGridView.Columns.Add("Wind", "Ветер");
+            dataGridView.Columns.Add("TempVPB", "Темп. ВПБ");
             dataGridView.Columns.Add("Mode", "Режим");
 
             // Пример данных для таблицы
             for (int i = 1; i <= 10; i++)
             {
                 dataGridView.Rows.Add(i, DateTime.Now.AddMinutes(-i).ToString("g"),
-                    $"{20 + i}°C", // Темп. ВПБ
-                    $"{i * 10}N", // F1
-                    $"{i * 15}N", // F2
-                    $"{i * 5}L",  // Q1
-                    $"{i * 7}L",  // Q2
-                    $"{i * 100}kg", // M1
-                    $"{i * 120}kg", // M2
+                    $"{i * 10}", // F1
+                    $"{i * 15}", // F2
+                    $"{i * 20}", // F3
+                    $"{i * 5}Кг",  // Q1
+                    $"{i * 7}Кг",  // Q2
+                    $"{i * 9}Кг",  // Q3
+                    $"{i * 100}%", // M1
+                    $"{i * 120}%", // M2
+                    $"{i * 140}%", // M3
                     $"{i * 2}m/s", // Ветер
-                    "Автоматический" // Режим
+                    $"{20 + i}°C", // Темп. ВПБ
+                    "Работа" // Режим
                 );
             }
 
@@ -76,7 +85,7 @@ namespace WPB_11
                 RightText = "Печать",
                 Size = new Size(200, 50),
                 Dock = DockStyle.None,
-                Margin = new Padding(dataGridView.Width + 50, 10, 0, 0) // Установите верхний отступ на 10 пикселей
+                Margin = new Padding(dataGridView.Width * 2 - 50, 10, 0, 0) // Установите верхний отступ на 10 пикселей
             };
 
             roundedButton.LeftButtonClick += (s, e) => MessageBox.Show("Нажата кнопка 'Обновить'!");
