@@ -148,6 +148,10 @@ namespace WPB_11
                     TabOverload tabover = new TabOverload();
                     tabover.ShowTabContent(contentPanel, TabNames);
                     break;
+                case 7:
+                    TabSettings tabs = new TabSettings();
+                    tabs.ShowTabContent(contentPanel, TabNames);
+                    break;
             }
         }
     }

@@ -7,7 +7,7 @@ using System.Threading.Tasks;
 
 namespace WPB_11
 {
-    public class RoundedButton : Control
+    public class DoubleRoundedButton : Control
     {
         private string leftText = "Обновить";
         private string rightText = "Печать";
@@ -37,7 +37,7 @@ namespace WPB_11
         public Font LeftButtonFont { get; set; } = FontManager.GetMediumFont(12); // Замените "LeftFont" на нужный вам шрифт
         public Font RightButtonFont { get; set; } = FontManager.GetMediumFont(12); // Замените "RightFont" на нужный вам шрифт
 
-        public RoundedButton()
+        public DoubleRoundedButton()
         {
             leftColor = defaultColor; // Устанавливаем начальный цвет для левой части
             rightColor = defaultColor; // Устанавливаем начальный цвет для правой части

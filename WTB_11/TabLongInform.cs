@@ -26,7 +26,7 @@ namespace WPB_11
             var totalCargoWeight = new TextBoxWithButton("Суммарная масса груза") { PlaceholderText = "значение появляется при подключении прибора" };
             var loadDistributionCoefficient = new TextBoxWithButton("Коэфф. распределения нагрузок") { PlaceholderText = "значение появляется при подключении прибора" };
             var craneTime = new DoubleLabel("Наработка крана: ") { Margin = new Padding(30, 0, 50, 10) };
-            var roundedButton = new RoundedButton
+            var roundedButton = new DoubleRoundedButton
             {
                 LeftText = "Обновить",
                 RightText = "Печать",

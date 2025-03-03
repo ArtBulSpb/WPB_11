@@ -79,7 +79,7 @@ namespace WPB_11
             }
 
             // Создаем кнопку
-            var roundedButton = new RoundedButton
+            var roundedButton = new DoubleRoundedButton
             {
                 LeftText = "Считать",
                 RightText = "Печать",
