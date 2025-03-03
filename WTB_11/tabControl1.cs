@@ -137,8 +137,16 @@ namespace WPB_11
                     break;
 
                 case 4:
-                    LongInformTab longinf = new LongInformTab();
-                    longinf.ShowTabContent(contentPanel, TabNames);
+                    TabLongInform tablong = new TabLongInform();
+                    tablong.ShowTabContent(contentPanel, TabNames);
+                    break;
+                case 5:
+                    TabShortInform tabshort = new TabShortInform();
+                    tabshort.ShowTabContent(contentPanel, TabNames);
+                    break;
+                case 6:
+                    TabOverload tabover = new TabOverload();
+                    tabover.ShowTabContent(contentPanel, TabNames);
                     break;
             }
         }

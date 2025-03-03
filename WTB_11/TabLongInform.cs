@@ -9,7 +9,7 @@ using static System.Windows.Forms.VisualStyles.VisualStyleElement.TextBox;
 
 namespace WPB_11
 {
-    class LongInformTab
+    class TabLongInform
     {
         public void ShowTabContent(Panel contentPanel, string[] TabNames)
         {
@@ -25,7 +25,7 @@ namespace WPB_11
             var characteristicNumber = new TextBoxWithButton("Характеристическое число") { PlaceholderText = "значение появляется при подключении прибора" };
             var totalCargoWeight = new TextBoxWithButton("Суммарная масса груза") { PlaceholderText = "значение появляется при подключении прибора" };
             var loadDistributionCoefficient = new TextBoxWithButton("Коэфф. распределения нагрузок") { PlaceholderText = "значение появляется при подключении прибора" };
-            var reloadPrint = new DoubleLabel("Наработка крана: ") { Margin = new Padding(115, 0, 50, 10) };
+            var craneTime = new DoubleLabel("Наработка крана: ") { Margin = new Padding(30, 0, 50, 10) };
             var roundedButton = new RoundedButton
             {
                 LeftText = "Обновить",
@@ -50,12 +50,19 @@ namespace WPB_11
             histogramControl.Text = "Гистограмма";
             histogramControl.Size = new Size(450, 400);
 
+            Panel separator1 = new Panel // отделяет дату и время от остального
+            {
+                Height = 1, // Высота разделителя
+                Dock = DockStyle.Top, // Расположение сверху
+                BackColor = Color.FromArgb(224, 224, 224), // Цвет E0E0E0
+                Margin = new Padding(0, 0, 0, 10)
+            };
 
             TableLayoutPanel layoutPanel = new TableLayoutPanel
             {
                 Dock = DockStyle.Fill,
                 ColumnCount = 3, // Увеличьте количество столбцов до 3
-                RowCount = 1,
+                RowCount = 3,
                 AutoSize = true
             };
 
@@ -91,13 +98,15 @@ namespace WPB_11
 
             // Добавляем элементы в панель с гистограммой
             histogramPanel.Controls.Add(histogramControl);
-            histogramPanel.Controls.Add(reloadPrint);
             histogramPanel.Controls.Add(roundedButton);
 
             // Добавляем панели в layoutPanel
-            layoutPanel.Controls.Add(winchesPanel, 0, 0);
-            layoutPanel.Controls.Add(new Panel(), 1, 0); // Пустая панель для отступа
-            layoutPanel.Controls.Add(histogramPanel, 2, 0);
+            layoutPanel.Controls.Add(craneTime, 0, 0);
+            layoutPanel.Controls.Add(separator1, 0, 1);
+            layoutPanel.SetColumnSpan(separator1, 3);
+            layoutPanel.Controls.Add(winchesPanel, 0, 2);
+            layoutPanel.Controls.Add(new Panel(), 1, 2); // Пустая панель для отступа
+            layoutPanel.Controls.Add(histogramPanel, 2, 2);
 
             contentPanel.Controls.Add(layoutPanel);
         }

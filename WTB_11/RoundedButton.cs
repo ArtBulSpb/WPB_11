@@ -33,6 +33,10 @@ namespace WPB_11
             set { rightText = value; Invalidate(); }
         }
 
+        // Используем кастомные шрифты из FontManager
+        public Font LeftButtonFont { get; set; } = FontManager.GetMediumFont(12); // Замените "LeftFont" на нужный вам шрифт
+        public Font RightButtonFont { get; set; } = FontManager.GetMediumFont(12); // Замените "RightFont" на нужный вам шрифт
+
         public RoundedButton()
         {
             leftColor = defaultColor; // Устанавливаем начальный цвет для левой части
@@ -66,23 +70,19 @@ namespace WPB_11
             g.DrawPath(new Pen(Color.Black, 2), path); // Обводка кнопки
 
             // Рисуем текст
-            using (Font font = new Font("Arial", 10))
-            {
-                // Определяем размеры текста
-                SizeF leftTextSize = g.MeasureString(leftText, font);
-                SizeF rightTextSize = g.MeasureString(rightText, font);
+            SizeF leftTextSize = g.MeasureString(leftText, LeftButtonFont);
+            SizeF rightTextSize = g.MeasureString(rightText, RightButtonFont);
 
-                // Устанавливаем координаты для текста
-                float leftTextX = (this.Width / 2 - dividerWidth) / 2 - leftTextSize.Width / 2; // Центрируем текст
-                float leftTextY = (this.Height - leftTextSize.Height) / 2;
+            // Устанавливаем координаты для текста
+            float leftTextX = (this.Width / 2 - dividerWidth) / 2 - leftTextSize.Width / 2; // Центрируем текст
+            float leftTextY = (this.Height - leftTextSize.Height) / 2;
 
-                float rightTextX = this.Width / 2 + (this.Width / 2 - dividerWidth) / 2 - rightTextSize.Width / 2; // Центрируем текст
-                float rightTextY = (this.Height - rightTextSize.Height) / 2;
+            float rightTextX = this.Width / 2 + (this.Width / 2 - dividerWidth) / 2 - rightTextSize.Width / 2; // Центрируем текст
+            float rightTextY = (this.Height - rightTextSize.Height) / 2;
 
-                // Рисуем текст
-                g.DrawString(leftText, font, Brushes.Black, leftTextX, leftTextY);
-                g.DrawString(rightText, font, Brushes.Black, rightTextX, rightTextY);
-            }
+            // Рисуем текст
+            g.DrawString(leftText, LeftButtonFont, Brushes.Black, leftTextX, leftTextY);
+            g.DrawString(rightText, RightButtonFont, Brushes.Black, rightTextX, rightTextY);
         }
 
         protected override void OnMouseDown(MouseEventArgs e)
