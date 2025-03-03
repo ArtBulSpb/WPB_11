@@ -27,7 +27,7 @@ namespace WPB_11
                 Text = DateTime.Now.ToString("HH:mm:ss"), // Отображаем текущее время
                 Font = FontManager.GetRegularFont(10),
                 AutoSize = true,
-                Location = new Point(0, 25) // Смещение вниз для второго лейбла
+                Location = new Point(mainLabel.Right + 30, 0) // Смещение вправо для второго лейбла
             };
 
             // Добавляем лейблы в UserControl
@@ -44,4 +44,5 @@ namespace WPB_11
             timeLabel.Text = DateTime.Now.ToString("HH:mm:ss");
         }
     }
+
 }
