@@ -20,7 +20,7 @@ namespace WPB_11
 
             // Создаем элементы управления
             ArrowButton arrowButton = new ArrowButton("G:\\VisualStudio\\repos\\WTB_11\\WTB_11\\Img\\arrow.PNG", 90 , 200);
-            //arrowButton.Click += ConnectButton_Click;
+            arrowButton.Click += ArrowButton_Click;
 
 
             CustomCheckedListBox customCheckedListBoxWinches = new CustomCheckedListBox("Список лебедок(1-8):")
@@ -264,9 +264,9 @@ namespace WPB_11
             // Добавляем основной TableLayoutPanel в contentPanel
             contentPanel.Controls.Add(mainLayout);
         }
-        private void ConnectButton_Click(object sender, EventArgs e)
+        private void ArrowButton_Click(object sender, EventArgs e)
         {
-            _deviceConnector.Connect();
+            _deviceConnector.RequestCurrentTime(); // Запрос текущего времени при нажатии на кнопку
         }
 
         private void UpdateStatus(string message)

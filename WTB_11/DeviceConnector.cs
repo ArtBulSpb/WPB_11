@@ -37,7 +37,7 @@ namespace WPB_11
             }
             catch (Exception ex)
             {
-                OnDeviceConnected?.Invoke($"Устройство отключено.");
+                OnDeviceConnected?.Invoke($"Ошибка");
             }
         }
 
@@ -47,7 +47,6 @@ namespace WPB_11
             {
                 _serialPort.Close();
                 IsConnected = false;
-                OnDeviceConnected?.Invoke("Устройство отключено.");
             }
         }
 
@@ -92,6 +91,21 @@ namespace WPB_11
             {
                 return "Устройство подключено.";
             }
+        }
+
+        public void RequestCurrentTime()
+        {
+            if (!IsConnected)
+            {
+                OnDeviceConnected?.Invoke("Устройство не подключено.");
+                return;
+            }
+
+            // Отправка команды на получение текущего времени.
+            // Например, вы можете использовать другой метод, чтобы отправить запрос на устройство.
+            // Здесь просто имитируем получение времени.
+            string currentTime = DateTime.Now.ToString(); // Замените на реальный запрос к устройству.
+            OnDeviceConnected?.Invoke($"Текущее время: {currentTime}");
         }
     }
 }
