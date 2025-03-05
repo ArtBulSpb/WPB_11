@@ -5,6 +5,7 @@ using System.Text;
 using System.Threading.Tasks;
 using System.Drawing;
 using System.Windows.Forms;
+using System.Data;
 
 namespace WPB_11
 {
@@ -13,27 +14,37 @@ namespace WPB_11
         private Panel tabPanel;
         private Panel contentPanel;
         private Button selectedButton; // Для отслеживания выбранной кнопки
-        private Panel separator; // Панель-разделитель
-                                 // Названия вкладок
+        private Label statusLabel; // Панель-разделитель
+        private Panel separator;
+        private DeviceConnector deviceConnector;
+        private System.Windows.Forms.Timer statusCheckTimer;
+
         public string[] TabNames { get; set; }
 
         public tabControl1(string[] tabNames)
         {
             TabNames = tabNames;
             InitializeComponents();
+            InitializeDeviceConnector("COM3");
+            deviceConnector.Connect();
+
+            // Настройка таймера
+            statusCheckTimer = new System.Windows.Forms.Timer();
+            statusCheckTimer.Interval = 2000; // Проверять состояние каждые 5 секунд
+            statusCheckTimer.Tick += StatusCheckTimer_Tick; // Подписываемся на событие Tick
+            statusCheckTimer.Start(); // Запускаем таймер
         }
 
         private void InitializeComponents()
         {
-            // Устанавливаем цвет панели
             Color tabColor = Color.White; // Цвет панели вкладок
 
             // Создаем панель для вкладок
             tabPanel = new Panel
             {
                 Dock = DockStyle.Left,
-                Width = 250, // Ширина панели вкладок
-                BackColor = tabColor // Цвет панели вкладок
+                Width = 250,
+                BackColor = tabColor
             };
 
             // Панель для содержимого
@@ -47,8 +58,8 @@ namespace WPB_11
             separator = new Panel
             {
                 Dock = DockStyle.Left,
-                Width = 1, // Ширина разделителя
-                BackColor = Color.FromArgb(224, 224, 224) // Цвет E0E0E0
+                Width = 1,
+                BackColor = Color.FromArgb(224, 224, 224)
             };
 
             // Кнопки для вкладок 
@@ -59,40 +70,72 @@ namespace WPB_11
                 {
                     Text = tabName,
                     Dock = DockStyle.Top,
-                    Tag = i + 1, // Сохраняем индекс вкладки в тег кнопки
-                    BackColor = tabColor, // Устанавливаем цвет кнопки равным цвету панели вкладок
-                    FlatStyle = FlatStyle.Flat, // Устанавливаем стиль кнопки на Flat
-                    Padding = new Padding(10, 0, 10, 0), // Устанавливаем отступы слева и справа
-                    AutoSize = true, // Устанавливаем AutoSize для кнопки
-                    TextAlign = ContentAlignment.MiddleLeft // Выравнивание текста слева
+                    Tag = i + 1,
+                    BackColor = tabColor,
+                    FlatStyle = FlatStyle.Flat,
+                    Padding = new Padding(10, 0, 10, 0),
+                    AutoSize = true,
+                    TextAlign = ContentAlignment.MiddleLeft
                 };
-                button.FlatAppearance.BorderSize = 0; // Убираем обводку
+                button.FlatAppearance.BorderSize = 0;
 
                 // Скругляем края кнопки
                 button.Paint += (s, e) =>
                 {
                     var buttonControl = (Button)s;
                     var path = new System.Drawing.Drawing2D.GraphicsPath();
-                    path.AddArc(0, 0, 20, 20, 180, 90); // Скругление верхнего левого угла
-                    path.AddArc(buttonControl.Width - 20, 0, 20, 20, 270, 90); // Скругление верхнего правого угла
-                    path.AddArc(buttonControl.Width - 20, buttonControl.Height - 20, 20, 20, 0, 90); // Скругление нижнего правого угла
-                    path.AddArc(0, buttonControl.Height - 20, 20, 20, 90, 90); // Скругление нижнего левого угла
+                    path.AddArc(0, 0, 20, 20, 180, 90);
+                    path.AddArc(buttonControl.Width - 20, 0, 20, 20, 270, 90);
+                    path.AddArc(buttonControl.Width - 20, buttonControl.Height - 20, 20, 20, 0, 90);
+                    path.AddArc(0, buttonControl.Height - 20, 20, 20, 90, 90);
                     path.CloseAllFigures();
                     buttonControl.Region = new Region(path);
                 };
 
-                button.Click += TabButton_Click; // Подписываемся на событие клика
+                button.Click += TabButton_Click;
                 tabPanel.Controls.Add(button);
             }
 
+            // Создаем поле для статуса подключения
+            statusLabel = new Label
+            {
+                Dock = DockStyle.Fill, // Изменено на Bottom
+                Height = 30, // Высота поля статуса
+                BackColor = tabColor,
+                TextAlign = ContentAlignment.MiddleCenter,
+                Text = "Статус подключения: Определяется", // Начальный текст
+                Font = new Font("Arial", 10, FontStyle.Bold)
+            };
+
             // Добавляем панели на контрол
             this.Controls.Add(contentPanel);
-            this.Controls.Add(separator); // Добавляем разделитель
+            this.Controls.Add(separator);
+            tabPanel.Controls.Add(statusLabel); // Добавляем поле статуса в tabPanel
             this.Controls.Add(tabPanel);
 
             // Инициализируем содержимое для первой вкладки
             ShowTabContent(1); // Показать содержимое последней добавленной вкладки (первая по порядку)
         }
+        private void InitializeDeviceConnector(string portName)
+        {
+            deviceConnector = new DeviceConnector(portName);
+            deviceConnector.OnDeviceConnected += UpdateStatus; // Подписываемся на событие
+        }
+        private void UpdateStatus(string status)
+        {
+            statusLabel.Text = status; // Обновляем текст статуса
+
+        }
+
+        private void StatusCheckTimer_Tick(object sender, EventArgs e)
+        {
+
+            deviceConnector.Connect();
+            // Проверяем состояние устройства и обновляем статус
+            string currentStatus = deviceConnector.CheckDeviceStatus(); // Предполагается, что метод возвращает строку статуса
+            UpdateStatus(currentStatus); // Обновляем статус на интерфейсе
+        }
+
 
         private void TabButton_Click(object sender, EventArgs e)
         {
@@ -112,6 +155,7 @@ namespace WPB_11
 
                 selectedButton = (Button)sender; // Запоминаем текущую выбранную кнопку
                 selectedButton.BackColor = Color.FromArgb(224, 224, 224); // Устанавливаем новый цвет для выбранной кнопки (F7F7F7)
+                
             }
 
         }
@@ -154,5 +198,6 @@ namespace WPB_11
                     break;
             }
         }
+        
     }
 }

@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Data;
 using System.Linq;
 using System.Windows.Forms;
 using static WPB_11.RoundedTextBox;
@@ -7,15 +8,20 @@ namespace WPB_11
 {
     class TabCurrentValue
     {
+        private DeviceConnector _deviceConnector;
+        private RoundedTextBox systemTime;
+
         public void ShowTabContent(Panel contentPanel, string[] TabNames)
         {
             contentPanel.Controls.Clear();
+
+            _deviceConnector = new DeviceConnector("COM3");
+            _deviceConnector.OnDeviceConnected += UpdateStatus;
+
             // Создаем элементы управления
             ArrowButton arrowButton = new ArrowButton("G:\\VisualStudio\\repos\\WTB_11\\WTB_11\\Img\\arrow.PNG", 90 , 200);
-            arrowButton.Click += (s, e) =>
-            {
-                MessageBox.Show("Установка времени...");
-            };
+            //arrowButton.Click += ConnectButton_Click;
+
 
             CustomCheckedListBox customCheckedListBoxWinches = new CustomCheckedListBox("Список лебедок(1-8):")
             {
@@ -80,7 +86,7 @@ namespace WPB_11
             var temperatureInBlockField = new RoundedTextBox("Температура в блоке:") { PlaceholderText = "значение появляется при подключении прибора" };
             var errors = new RoundedTextBox("Ошибки:") { PlaceholderText = "значение появляется при подключении прибора" };
 
-            var systemTime = new RoundedTextBox("Дата и время в системе") { PlaceholderText = "" };
+            systemTime = new RoundedTextBox("Дата и время в системе") { PlaceholderText = "" };
             var deviceTime = new RoundedTextBox("Дата и время в приборе") { PlaceholderText = "значение появляется при подключении прибора" };
                 
 
@@ -253,9 +259,26 @@ namespace WPB_11
             mainLayout.Controls.Add(errorsPanel, 2, 4);
 
 
+            
 
             // Добавляем основной TableLayoutPanel в contentPanel
             contentPanel.Controls.Add(mainLayout);
+        }
+        private void ConnectButton_Click(object sender, EventArgs e)
+        {
+            _deviceConnector.Connect();
+        }
+
+        private void UpdateStatus(string message)
+        {
+            if (systemTime.InvokeRequired)
+            {
+                systemTime.Invoke(new Action(() => systemTime.Text = message));
+            }
+            else
+            {
+                systemTime.Text = message;
+            }
         }
     }
 }
