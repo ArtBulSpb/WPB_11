@@ -8,13 +8,13 @@ using System.Drawing.Text;
 
 namespace WPB_11
 {
-    public class roundedTextBox : UserControl
+    public class RoundedTextBox : UserControl
     {
         public Label label;
         public TextBox textBox;
         private string placeholderText;
 
-        public roundedTextBox(string labelText)
+        public RoundedTextBox(string labelText)
         {
 
             // Инициализация элементов

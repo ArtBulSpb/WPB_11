@@ -38,6 +38,24 @@ namespace WPB_11
                 MessageBox.Show("Получаем ответ...");
             };
 
+            ArrowButton reloadButton = new ArrowButton("G:\\VisualStudio\\repos\\WTB_11\\WTB_11\\Img\\reload.JPG", 90, 200) { Height = 40};
+            reloadButton.Click += (s, e) =>
+            {
+                MessageBox.Show("Обновляем...");
+            };
+
+            var atComandList = new CustomCheckedListBox("AT Команды") { Margin = new Padding(25, 0, 25, 0) , Height = 60};
+            atComandList.AddItem("AT");
+            atComandList.AddItem("ATEO");
+            atComandList.AddItem("IMEI");
+            atComandList.AddItem("Наличие модема");
+            atComandList.AddItem("Статус сим");
+            atComandList.AddItem("Регистрация в сети");
+            atComandList.AddItem("Инфо о операторе");
+            atComandList.AddItem("Состояние gprs");
+            atComandList.AddItem("Ip адрес");
+
+
             var APN = new TextBoxWithButton("APN") { PlaceholderText = "значение появляется при подключении прибора" };
             var APNUser = new TextBoxWithButton("APN USER") { PlaceholderText = "значение появляется при подключении прибора" };
             var APNPassword = new TextBoxWithButton("APN PASSWORD") { PlaceholderText = "значение появляется при подключении прибора" };
@@ -45,9 +63,9 @@ namespace WPB_11
             var port = new TextBoxWithButton("Port") { PlaceholderText = "значение появляется при подключении прибора" };
             var username = new TextBoxWithButton("Username") { PlaceholderText = "значение появляется при подключении прибора" };
             var password = new TextBoxWithButton("Password") { PlaceholderText = "значение появляется при подключении прибора" };
-            var comand = new roundedTextBox("Команда") { PlaceholderText = "значение появляется при подключении прибора" };
-            var response = new roundedTextBox("Ответ от устройства") { PlaceholderText = "значение появляется при подключении прибора" };
-            var atButton = new SingleRoundedButton
+            var comand = new RoundedTextBox("Команда") { PlaceholderText = "значение появляется при подключении прибора" };
+            var response = new RoundedTextBox("Ответ от устройства") { PlaceholderText = "значение появляется при подключении прибора" };
+            /*var atButton = new SingleRoundedButton
             {
                 ButtonText = "AT",
                 Size = new Size(200, 50),
@@ -100,7 +118,7 @@ namespace WPB_11
                 ButtonText = "Ip адрес",
                 Size = new Size(200, 50),
                 Dock = DockStyle.None,
-            };
+            };*/
 
 
             TableLayoutPanel layoutPanel = new TableLayoutPanel
@@ -169,7 +187,7 @@ namespace WPB_11
             userPanel.Controls.Add(username);
             userPanel.Controls.Add(password);
 
-            FlowLayoutPanel atPanel1 = new FlowLayoutPanel
+            /*FlowLayoutPanel atPanel1 = new FlowLayoutPanel
             {
                 Dock = DockStyle.Fill,
                 FlowDirection = FlowDirection.TopDown,
@@ -203,7 +221,7 @@ namespace WPB_11
             };
             atPanel3.Controls.Add(operatorInformationButton);
             atPanel3.Controls.Add(gprsStatusButton);
-            atPanel3.Controls.Add(IpButton);
+            atPanel3.Controls.Add(IpButton);*/
 
             FlowLayoutPanel commandPanel = new FlowLayoutPanel
             {
@@ -215,6 +233,17 @@ namespace WPB_11
             };
             commandPanel.Controls.Add(comand);
             commandPanel.Controls.Add(sendButton);
+
+            FlowLayoutPanel reloadPanel = new FlowLayoutPanel
+            {
+                Dock = DockStyle.Fill,
+                FlowDirection = FlowDirection.TopDown,
+                AutoSize = true,
+                WrapContents = false,
+                Margin = new Padding(20, 0, 0, 0)
+            };
+            reloadPanel.Controls.Add(atComandList);
+            reloadPanel.Controls.Add(reloadButton);
 
             FlowLayoutPanel responsePanel = new FlowLayoutPanel
             {
@@ -236,14 +265,20 @@ namespace WPB_11
             layoutPanel.Controls.Add(userPanel, 2, 2);
             layoutPanel.Controls.Add(separator2, 0, 3);
             layoutPanel.SetColumnSpan(separator2, 3);
-            layoutPanel.Controls.Add(atPanel1, 0, 4);
+            /*layoutPanel.Controls.Add(atPanel1, 0, 4);
             layoutPanel.Controls.Add(atPanel2, 1, 4);
-            layoutPanel.Controls.Add(atPanel3, 2, 4);
-            layoutPanel.Controls.Add(separator3, 0, 5);
-            layoutPanel.SetColumnSpan(separator3, 3);
-            layoutPanel.Controls.Add(commandPanel, 0, 6);
-            layoutPanel.Controls.Add(responsePanel, 3, 6);
+            layoutPanel.Controls.Add(atPanel3, 2, 4);*/
+            layoutPanel.Controls.Add(commandPanel, 0, 4);
+            layoutPanel.Controls.Add(reloadPanel, 1, 4);
+            layoutPanel.Controls.Add(responsePanel, 2, 4);
 
+            layoutPanel.RowStyles.Add(new RowStyle(SizeType.AutoSize)); // Для кнопки
+            layoutPanel.RowStyles.Add(new RowStyle(SizeType.AutoSize)); // Для разделителя
+            layoutPanel.RowStyles.Add(new RowStyle(SizeType.AutoSize)); // Для APNPanel
+            layoutPanel.RowStyles.Add(new RowStyle(SizeType.AutoSize)); // Для serverPanel
+            layoutPanel.RowStyles.Add(new RowStyle(SizeType.AutoSize)); // Для userPanel
+            layoutPanel.RowStyles.Add(new RowStyle(SizeType.AutoSize)); // Для разделителей
+            layoutPanel.RowStyles.Add(new RowStyle(SizeType.AutoSize)); // Для других панелей
 
             contentPanel.Controls.Add(layoutPanel);
         }

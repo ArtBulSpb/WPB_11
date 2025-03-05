@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Linq;
 using System.Windows.Forms;
-using static WPB_11.roundedTextBox;
+using static WPB_11.RoundedTextBox;
 
 namespace WPB_11
 {
@@ -37,11 +37,11 @@ namespace WPB_11
                 BackColor = Color.Transparent, // Делаем фон метки прозрачным
                 Font = FontManager.GetSemiBoldFont(12),
             };
-            var sensorsCountField1 = new roundedTextBox("Количество датчиков:") { PlaceholderText = "значение появляется при подключении прибора" };
-            var effortOnSensorsField1 = new roundedTextBox("Усилие на датчиках:") { PlaceholderText = "значение появляется при подключении прибора" };
-            var totalEffortField1 = new roundedTextBox("Суммарное усилие:") { PlaceholderText = "значение появляется при подключении прибора" };
-            var cargoMassField1 = new roundedTextBox("Масса груза:") { PlaceholderText = "значение появляется при подключении прибора" };
-            var loadPercentageField1 = new roundedTextBox("Процент загрузки:") { PlaceholderText = "значение появляется при подключении прибора" };
+            var sensorsCountField1 = new RoundedTextBox("Количество датчиков:") { PlaceholderText = "значение появляется при подключении прибора" };
+            var effortOnSensorsField1 = new RoundedTextBox("Усилие на датчиках:") { PlaceholderText = "значение появляется при подключении прибора" };
+            var totalEffortField1 = new RoundedTextBox("Суммарное усилие:") { PlaceholderText = "значение появляется при подключении прибора" };
+            var cargoMassField1 = new RoundedTextBox("Масса груза:") { PlaceholderText = "значение появляется при подключении прибора" };
+            var loadPercentageField1 = new RoundedTextBox("Процент загрузки:") { PlaceholderText = "значение появляется при подключении прибора" };
 
             //Лебедка 2
             var label2 = new Label()
@@ -53,11 +53,11 @@ namespace WPB_11
                 BackColor = Color.Transparent, // Делаем фон метки прозрачным
                 Font = FontManager.GetSemiBoldFont(12),
             };
-            var sensorsCountField2 = new roundedTextBox("Количество датчиков:") { PlaceholderText = "значение появляется при подключении прибора" };
-            var effortOnSensorsField2 = new roundedTextBox("Усилие на датчиках:") { PlaceholderText = "значение появляется при подключении прибора" };
-            var totalEffortField2 = new roundedTextBox("Суммарное усилие:") { PlaceholderText = "значение появляется при подключении прибора" };
-            var cargoMassField2 = new roundedTextBox("Масса груза:") { PlaceholderText = "значение появляется при подключении прибора" };
-            var loadPercentageField2 = new roundedTextBox("Процент загрузки:") { PlaceholderText = "значение появляется при подключении прибора" };
+            var sensorsCountField2 = new RoundedTextBox("Количество датчиков:") { PlaceholderText = "значение появляется при подключении прибора" };
+            var effortOnSensorsField2 = new RoundedTextBox("Усилие на датчиках:") { PlaceholderText = "значение появляется при подключении прибора" };
+            var totalEffortField2 = new RoundedTextBox("Суммарное усилие:") { PlaceholderText = "значение появляется при подключении прибора" };
+            var cargoMassField2 = new RoundedTextBox("Масса груза:") { PlaceholderText = "значение появляется при подключении прибора" };
+            var loadPercentageField2 = new RoundedTextBox("Процент загрузки:") { PlaceholderText = "значение появляется при подключении прибора" };
 
             //Лебедка 3
             var label3 = new Label()
@@ -69,19 +69,19 @@ namespace WPB_11
                 BackColor = Color.Transparent, // Делаем фон метки прозрачным
                 Font = FontManager.GetSemiBoldFont(12),
             };
-            var sensorsCountField3 = new roundedTextBox("Количество датчиков:") { PlaceholderText = "значение появляется при подключении прибора" };
-            var effortOnSensorsField3 = new roundedTextBox("Усилие на датчиках:") { PlaceholderText = "значение появляется при подключении прибора" };
-            var totalEffortField3 = new roundedTextBox("Суммарное усилие:") { PlaceholderText = "значение появляется при подключении прибора" };
-            var cargoMassField3 = new roundedTextBox("Масса груза:") { PlaceholderText = "значение появляется при подключении прибора" };
-            var loadPercentageField3 = new roundedTextBox("Процент загрузки:") { PlaceholderText = "значение появляется при подключении прибора" };
+            var sensorsCountField3 = new RoundedTextBox("Количество датчиков:") { PlaceholderText = "значение появляется при подключении прибора" };
+            var effortOnSensorsField3 = new RoundedTextBox("Усилие на датчиках:") { PlaceholderText = "значение появляется при подключении прибора" };
+            var totalEffortField3 = new RoundedTextBox("Суммарное усилие:") { PlaceholderText = "значение появляется при подключении прибора" };
+            var cargoMassField3 = new RoundedTextBox("Масса груза:") { PlaceholderText = "значение появляется при подключении прибора" };
+            var loadPercentageField3 = new RoundedTextBox("Процент загрузки:") { PlaceholderText = "значение появляется при подключении прибора" };
 
 
             var windSpeedField = new CTextBox("Скорость ветра:") { PlaceholderText = "Скорость ветра (коэфф.)" };
-            var temperatureInBlockField = new roundedTextBox("Температура в блоке:") { PlaceholderText = "значение появляется при подключении прибора" };
-            var errors = new roundedTextBox("Ошибки:") { PlaceholderText = "значение появляется при подключении прибора" };
+            var temperatureInBlockField = new RoundedTextBox("Температура в блоке:") { PlaceholderText = "значение появляется при подключении прибора" };
+            var errors = new RoundedTextBox("Ошибки:") { PlaceholderText = "значение появляется при подключении прибора" };
 
-            var systemTime = new roundedTextBox("Дата и время в системе") { PlaceholderText = "" };
-            var deviceTime = new roundedTextBox("Дата и время в приборе") { PlaceholderText = "значение появляется при подключении прибора" };
+            var systemTime = new RoundedTextBox("Дата и время в системе") { PlaceholderText = "" };
+            var deviceTime = new RoundedTextBox("Дата и время в приборе") { PlaceholderText = "значение появляется при подключении прибора" };
                 
 
             // Создаем TableLayoutPanel

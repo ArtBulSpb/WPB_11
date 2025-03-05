@@ -19,6 +19,7 @@ namespace WPB_11
                 ForeColor = Color.Black,
                 BackColor = Color.Transparent, // Делаем фон метки прозрачным
                 Font = FontManager.GetSemiBoldFont(10),
+                TextAlign = ContentAlignment.MiddleCenter,
             };
 
             // Инициализация ComboBox

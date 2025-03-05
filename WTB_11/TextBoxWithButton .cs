@@ -8,7 +8,7 @@ namespace WPB_11
 {
     public class TextBoxWithButton : UserControl
     {
-        private roundedTextBox _roundedTextBox;
+        private RoundedTextBox _roundedTextBox;
         private ArrowButton _arrowButton;
         private string buttonImagePath = "G:\\VisualStudio\\repos\\WTB_11\\WTB_11\\Img\\saveButton.JPG";
         private int buttonHeight = 30; // Высота кнопки
@@ -17,7 +17,7 @@ namespace WPB_11
         public TextBoxWithButton(string labelText)
         {
             // Инициализация элементов
-            _roundedTextBox = new roundedTextBox(labelText)
+            _roundedTextBox = new RoundedTextBox(labelText)
             {
                 Width = 200, // Устанавливаем ширину текстового поля
                 Height = 90  // Устанавливаем высоту текстового поля
