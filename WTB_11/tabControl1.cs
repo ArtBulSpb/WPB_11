@@ -118,7 +118,7 @@ namespace WPB_11
         }
         private void InitializeDeviceConnector(string portName)
         {
-            deviceConnector = new DeviceConnector(portName);
+            deviceConnector = DeviceConnector.Instance();
             deviceConnector.OnDeviceConnected += UpdateStatus; // Подписываемся на событие
         }
         private void UpdateStatus(string status)

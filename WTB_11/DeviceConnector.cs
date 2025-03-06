@@ -8,14 +8,15 @@ using System.Threading.Tasks;
 
 namespace WPB_11
 {
-    class DeviceConnector
+    public class DeviceConnector
     {
+        private static DeviceConnector _instance;
         private SerialPort _serialPort;
         public bool IsConnected { get; private set; }
 
         public event Action<string> OnDeviceConnected;
 
-        public DeviceConnector(string portName)
+        private DeviceConnector(string portName)
         {
             _serialPort = new SerialPort(portName)
             {
@@ -27,17 +28,28 @@ namespace WPB_11
             };
         }
 
+        public static DeviceConnector Instance(string portName = "COM3")
+        {
+            if (_instance == null)
+            {
+                _instance = new DeviceConnector(portName);
+            }
+            return _instance;
+        }
+
         public void Connect()
         {
             try
             {
-                _serialPort.Open();
-                IsConnected = true;
-                StartReading();
+                if (!_serialPort.IsOpen)
+                {
+                    _serialPort.Open();
+                    IsConnected = true;
+                    StartReading();
+                }
             }
             catch (Exception ex)
             {
-                OnDeviceConnected?.Invoke($"Ошибка");
             }
         }
 
@@ -52,7 +64,7 @@ namespace WPB_11
 
         private void StartReading()
         {
-            Thread readThread = new Thread(new ThreadStart(ReadData));
+            Thread readThread = new Thread(ReadData);
             readThread.IsBackground = true;
             readThread.Start();
         }
@@ -77,20 +89,22 @@ namespace WPB_11
 
         private void ProcessData(string data)
         {
-            // Обработка полученных данных
-            Console.WriteLine($"Received data: {data}");
-            // Здесь можно добавить логику для обработки пакетов данных
+            byte[] responseData = ConvertDataStringToByteArray(data);
+            ProcessTimeResponse(responseData);
         }
 
-        public string CheckDeviceStatus()
+        // Пример метода для преобразования строки данных в массив байтов
+        private byte[] ConvertDataStringToByteArray(string data)
         {
-            if (!IsConnected)
+            // Здесь вы можете реализовать логику для преобразования строки в массив байтов
+            // Например, если данные приходят в шестнадцатеричном формате
+            string[] stringBytes = data.Split(' ');
+            byte[] bytes = new byte[stringBytes.Length];
+            for (int i = 0; i < stringBytes.Length; i++)
             {
-                return "Устройство не подключено.";
-            } else
-            {
-                return "Устройство подключено.";
+                bytes[i] = Convert.ToByte(stringBytes[i], 16);
             }
+            return bytes;
         }
 
         public void RequestCurrentTime()
@@ -101,12 +115,84 @@ namespace WPB_11
                 return;
             }
 
-            // Отправка команды на получение текущего времени.
-            // Например, вы можете использовать другой метод, чтобы отправить запрос на устройство.
-            // Здесь просто имитируем получение времени.
-            string currentTime = DateTime.Now.ToString(); // Замените на реальный запрос к устройству.
-            OnDeviceConnected?.Invoke($"Текущее время: {currentTime}");
+            byte[] sendData = new byte[12];
+            sendData[0] = 0x3F; // Начало пакета
+            sendData[1] = 0x00; // ID устройства
+            sendData[2] = 0x08; // Длина пакета
+            sendData[3] = 0x06; // Команда для получения времени
+            sendData[4] = (byte)DateTime.Now.Second;
+            sendData[5] = (byte)DateTime.Now.Minute;
+            sendData[6] = (byte)DateTime.Now.Hour;
+            sendData[7] = (byte)DateTime.Now.DayOfWeek;
+            sendData[8] = (byte)DateTime.Now.Day;
+            sendData[9] = (byte)DateTime.Now.Month;
+            sendData[10] = (byte)(DateTime.Now.Year - 2000);
+            sendData[11] = 0; // CRC (пока не вычисляется)
+
+            // Вычисление CRC
+            for (int i = 0; i < 10; i++)
+            {
+                sendData[11] ^= sendData[i];
+            }
+
+            try
+            {
+                _serialPort.Write(sendData, 0, sendData.Length);
+                Console.WriteLine("Запрос времени отправлен.");
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Ошибка отправки данных: {ex.Message}");
+            }
+        }
+
+        // Метод для обработки ответа на запрос времени
+        private void ProcessTimeResponse(byte[] response)
+        {
+            if (response.Length < 12)
+            {
+                Console.WriteLine("Некорректный ответ на запрос времени.");
+                return;
+            }
+
+            // Проверка CRC
+            byte crc = 0;
+            for (int i = 0; i < 10; i++)
+            {
+                crc ^= response[i];
+            }
+
+            if (crc != response[11])
+            {
+                Console.WriteLine("Ошибка CRC.");
+                return;
+            }
+
+            // Получение времени
+            DateTime deviceTime = new DateTime(
+                2000 + response[10], // Год
+                response[9],         // Месяц
+                response[8],         // День
+                response[6],         // Час
+                response[5],         // Минуты
+                 response[4]          // Секунды
+        );
+
+            Console.WriteLine($"Полученное время: {deviceTime}");
+        }
+
+        public string CheckDeviceStatus()
+        {
+            if (!IsConnected)
+            {
+                return "Устройство не подключено.";
+            }
+            else
+            {
+                return "Устройство подключено.";
+            }
         }
     }
+
 }
 

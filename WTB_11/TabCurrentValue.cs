@@ -15,7 +15,8 @@ namespace WPB_11
         {
             contentPanel.Controls.Clear();
 
-            _deviceConnector = new DeviceConnector("COM3");
+            _deviceConnector = DeviceConnector.Instance("COM3");
+
             _deviceConnector.OnDeviceConnected += UpdateStatus;
 
             // Создаем элементы управления
