@@ -272,13 +272,14 @@ namespace WPB_11
 
         private void UpdateStatus(string message)
         {
+            // Обновляем текстовый бокс с текущим временем устройства
             if (systemTime.InvokeRequired)
             {
-                systemTime.Invoke(new Action(() => systemTime.Text = message));
+                systemTime.Invoke(new Action<string>(UpdateStatus), message);
             }
             else
             {
-                systemTime.Text = message;
+                systemTime.Text = message; // Обновляем текст
             }
         }
     }

@@ -15,6 +15,7 @@ namespace WPB_11
         public bool IsConnected { get; private set; }
 
         public event Action<string> OnDeviceConnected;
+        private bool _waitingForTimeResponse = false;
 
         private DeviceConnector(string portName)
         {
@@ -50,6 +51,7 @@ namespace WPB_11
             }
             catch (Exception ex)
             {
+                OnDeviceConnected?.Invoke($"Ошибка подключения: {ex.Message}");
             }
         }
 
@@ -69,23 +71,7 @@ namespace WPB_11
             readThread.Start();
         }
 
-        private void ReadData()
-        {
-            while (IsConnected)
-            {
-                try
-                {
-                    string data = _serialPort.ReadLine(); // Чтение данных из порта
-                    ProcessData(data);
-                }
-                catch (TimeoutException) { }
-                catch (Exception ex)
-                {
-                    OnDeviceConnected?.Invoke($"Ошибка чтения данных: {ex.Message}");
-                    Disconnect();
-                }
-            }
-        }
+        
 
         private void ProcessData(string data)
         {
@@ -138,20 +124,62 @@ namespace WPB_11
             try
             {
                 _serialPort.Write(sendData, 0, sendData.Length);
-                Console.WriteLine("Запрос времени отправлен.");
+                OnDeviceConnected?.Invoke("Запрос времени");
+                _waitingForTimeResponse = true; // Установим флаг ожидания ответа
+                StartReading();
             }
             catch (Exception ex)
             {
-                Console.WriteLine($"Ошибка отправки данных: {ex.Message}");
+                OnDeviceConnected?.Invoke("ошибка отправки");
             }
         }
 
-        // Метод для обработки ответа на запрос времени
+        private void ReadData()
+        {
+            OnDeviceConnected?.Invoke("ReadData");
+
+            while (IsConnected)
+            {
+                try
+                {
+                    byte[] response = new byte[12]; // Предположим, что ответ будет 12 байт
+                    int bytesRead = _serialPort.Read(response, 0, response.Length); // Чтение ответа
+
+                    OnDeviceConnected?.Invoke($"Прочитано байтов: {bytesRead}"); // Отладочное сообщение
+
+                    if (bytesRead == response.Length)
+                    {
+                        if (_waitingForTimeResponse)
+                        {
+                            ProcessTimeResponse(response);
+                            _waitingForTimeResponse = false; // Сброс флага ожидания
+                        }
+                        else
+                        {
+                            ProcessData(BitConverter.ToString(response)); // Обработка других данных
+                        }
+                    }
+                    else
+                    {
+                        OnDeviceConnected?.Invoke("Некорректное количество байтов прочитано.");
+                    }
+                }
+                catch (TimeoutException) { }
+                catch (Exception ex)
+                {
+                    OnDeviceConnected?.Invoke($"Ошибка чтения данных: {ex.Message}");
+                    Disconnect();
+                }
+            }
+        }
+
+
+
         private void ProcessTimeResponse(byte[] response)
         {
             if (response.Length < 12)
             {
-                Console.WriteLine("Некорректный ответ на запрос времени.");
+                OnDeviceConnected?.Invoke("Некорректный ответ");
                 return;
             }
 
@@ -164,7 +192,7 @@ namespace WPB_11
 
             if (crc != response[11])
             {
-                Console.WriteLine("Ошибка CRC.");
+                OnDeviceConnected?.Invoke("ошибка crc");
                 return;
             }
 
@@ -175,10 +203,11 @@ namespace WPB_11
                 response[8],         // День
                 response[6],         // Час
                 response[5],         // Минуты
-                 response[4]          // Секунды
-        );
+                response[4]          // Секунды
+            );
 
-            Console.WriteLine($"Полученное время: {deviceTime}");
+            OnDeviceConnected?.Invoke("полученное время");
+            OnDeviceConnected?.Invoke($"Текущее время устройства: {deviceTime}"); // Отправка времени в событие
         }
 
         public string CheckDeviceStatus()
