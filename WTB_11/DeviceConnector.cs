@@ -140,31 +140,44 @@ namespace WPB_11
 
             while (IsConnected)
             {
+                OnDeviceConnected?.Invoke("попали в цикл");
                 try
                 {
-                    byte[] response = new byte[12]; // Предположим, что ответ будет 12 байт
-                    int bytesRead = _serialPort.Read(response, 0, response.Length); // Чтение ответа
+                    OnDeviceConnected?.Invoke("попали в трай");
 
-                    OnDeviceConnected?.Invoke($"Прочитано байтов: {bytesRead}"); // Отладочное сообщение
-
-                    if (bytesRead == response.Length)
+                    if (_serialPort.BytesToRead > 0)
                     {
-                        if (_waitingForTimeResponse)
+                        byte[] response = new byte[12]; // Предположим, что ответ будет 12 байт
+                        int bytesRead = _serialPort.Read(response, 0, response.Length); // Чтение ответа
+
+                        OnDeviceConnected?.Invoke($"Прочитано байтов: {bytesRead}, данные: {BitConverter.ToString(response.Take(bytesRead).ToArray())}"); // Отладочное сообщение
+
+                        if (bytesRead == response.Length)
                         {
-                            ProcessTimeResponse(response);
-                            _waitingForTimeResponse = false; // Сброс флага ожидания
+                            if (_waitingForTimeResponse)
+                            {
+                                ProcessTimeResponse(response);
+                                _waitingForTimeResponse = false; // Сброс флага ожидания
+                            }
+                            else
+                            {
+                                ProcessData(BitConverter.ToString(response)); // Обработка других данных
+                            }
                         }
                         else
                         {
-                            ProcessData(BitConverter.ToString(response)); // Обработка других данных
+                            OnDeviceConnected?.Invoke("Некорректное количество байтов прочитано.");
                         }
                     }
                     else
                     {
-                        OnDeviceConnected?.Invoke("Некорректное количество байтов прочитано.");
+                        OnDeviceConnected?.Invoke("Нет доступных данных для чтения.");
                     }
                 }
-                catch (TimeoutException) { }
+                catch (TimeoutException)
+                {
+                    OnDeviceConnected?.Invoke("Таймаут при чтении данных.");
+                }
                 catch (Exception ex)
                 {
                     OnDeviceConnected?.Invoke($"Ошибка чтения данных: {ex.Message}");
@@ -172,6 +185,8 @@ namespace WPB_11
                 }
             }
         }
+
+
 
 
 

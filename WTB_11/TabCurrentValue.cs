@@ -267,7 +267,14 @@ namespace WPB_11
         }
         private void ArrowButton_Click(object sender, EventArgs e)
         {
-            _deviceConnector.RequestCurrentTime(); // Запрос текущего времени при нажатии на кнопку
+            if (DeviceConnector.Instance().IsConnected)
+            {
+                DeviceConnector.Instance().RequestCurrentTime();
+            }
+            else
+            {
+                MessageBox.Show("Устройство не подключено.");
+            }
         }
 
         private void UpdateStatus(string message)
