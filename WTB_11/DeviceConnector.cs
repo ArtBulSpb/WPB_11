@@ -5,6 +5,7 @@ using System.Text;
 using System.IO.Ports;
 using System.Threading;
 using System.Threading.Tasks;
+using WPB_11.DataStructures;
 
 namespace WPB_11
 {
@@ -188,7 +189,7 @@ namespace WPB_11
 
 
 
-
+        
 
         private void ProcessTimeResponse(byte[] response)
         {
