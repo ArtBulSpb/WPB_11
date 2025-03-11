@@ -26,7 +26,8 @@ namespace WPB_11
                 Parity = Parity.None,
                 StopBits = StopBits.One,
                 DataBits = 8,
-                Handshake = Handshake.None
+                Handshake = Handshake.None,
+                ReadTimeout = 5000,
             };
         }
 
@@ -39,192 +40,54 @@ namespace WPB_11
             return _instance;
         }
 
+        private readonly object _lock = new object();
+
         public void Connect()
         {
-            try
+            lock (_lock)
             {
-                if (!_serialPort.IsOpen)
+                if (IsConnected)
                 {
-                    _serialPort.Open();
-                    IsConnected = true;
-                    StartReading();
+                    OnDeviceConnected?.Invoke("Подключение уже в процессе...");
+                    return;
                 }
-            }
-            catch (Exception ex)
-            {
-                OnDeviceConnected?.Invoke($"Ошибка подключения: {ex.Message}");
+
+                IsConnected = true;
+
+                try
+                {
+                    if (!_serialPort.IsOpen)
+                    {
+                        // Проверяем доступные порты
+                        string[] ports = SerialPort.GetPortNames();
+                        OnDeviceConnected?.Invoke("Доступные порты: " + string.Join(", ", ports));
+
+                        _serialPort.Open();
+                        IsConnected = true;
+                        StartReading();
+                    }
+                }
+                catch (Exception ex)
+                {
+                    OnDeviceConnected?.Invoke($"Ошибка подключения: {ex.Message}");
+                }
             }
         }
 
         public void Disconnect()
         {
-            if (_serialPort.IsOpen)
+            lock (_lock)
             {
-                _serialPort.Close();
-                IsConnected = false;
-            }
-        }
-
-        private void StartReading()
-        {
-            Thread readThread = new Thread(ReadData);
-            readThread.IsBackground = true;
-            readThread.Start();
-        }
-
-        
-
-        private void ProcessData(string data)
-        {
-            byte[] responseData = ConvertDataStringToByteArray(data);
-            ProcessTimeResponse(responseData);
-        }
-
-        // Пример метода для преобразования строки данных в массив байтов
-        private byte[] ConvertDataStringToByteArray(string data)
-        {
-            // Здесь вы можете реализовать логику для преобразования строки в массив байтов
-            // Например, если данные приходят в шестнадцатеричном формате
-            string[] stringBytes = data.Split(' ');
-            byte[] bytes = new byte[stringBytes.Length];
-            for (int i = 0; i < stringBytes.Length; i++)
-            {
-                bytes[i] = Convert.ToByte(stringBytes[i], 16);
-            }
-            return bytes;
-        }
-
-        public void RequestCurrentTime()
-        {
-            if (!IsConnected)
-            {
-                OnDeviceConnected?.Invoke("Устройство не подключено.");
-                return;
-            }
-
-            byte[] sendData = new byte[12];
-            sendData[0] = 0x3F; // Начало пакета
-            sendData[1] = 0x00; // ID устройства
-            sendData[2] = 0x08; // Длина пакета
-            sendData[3] = 0x06; // Команда для получения времени
-            sendData[4] = (byte)DateTime.Now.Second;
-            sendData[5] = (byte)DateTime.Now.Minute;
-            sendData[6] = (byte)DateTime.Now.Hour;
-            sendData[7] = (byte)DateTime.Now.DayOfWeek;
-            sendData[8] = (byte)DateTime.Now.Day;
-            sendData[9] = (byte)DateTime.Now.Month;
-            sendData[10] = (byte)(DateTime.Now.Year - 2000);
-            sendData[11] = 0; // CRC (пока не вычисляется)
-
-            // Вычисление CRC
-            for (int i = 0; i < 10; i++)
-            {
-                sendData[11] ^= sendData[i];
-            }
-
-            try
-            {
-                _serialPort.Write(sendData, 0, sendData.Length);
-                OnDeviceConnected?.Invoke("Запрос времени");
-                _waitingForTimeResponse = true; // Установим флаг ожидания ответа
-                StartReading();
-            }
-            catch (Exception ex)
-            {
-                OnDeviceConnected?.Invoke("ошибка отправки");
-            }
-        }
-
-        private void ReadData()
-        {
-            OnDeviceConnected?.Invoke("ReadData");
-
-            while (IsConnected)
-            {
-                OnDeviceConnected?.Invoke("попали в цикл");
-                try
+                if (_serialPort.IsOpen)
                 {
-                    OnDeviceConnected?.Invoke("попали в трай");
-
-                    if (_serialPort.BytesToRead > 0)
-                    {
-                        byte[] response = new byte[12]; // Предположим, что ответ будет 12 байт
-                        int bytesRead = _serialPort.Read(response, 0, response.Length); // Чтение ответа
-
-                        OnDeviceConnected?.Invoke($"Прочитано байтов: {bytesRead}, данные: {BitConverter.ToString(response.Take(bytesRead).ToArray())}"); // Отладочное сообщение
-
-                        if (bytesRead == response.Length)
-                        {
-                            if (_waitingForTimeResponse)
-                            {
-                                ProcessTimeResponse(response);
-                                _waitingForTimeResponse = false; // Сброс флага ожидания
-                            }
-                            else
-                            {
-                                ProcessData(BitConverter.ToString(response)); // Обработка других данных
-                            }
-                        }
-                        else
-                        {
-                            OnDeviceConnected?.Invoke("Некорректное количество байтов прочитано.");
-                        }
-                    }
-                    else
-                    {
-                        OnDeviceConnected?.Invoke("Нет доступных данных для чтения.");
-                    }
-                }
-                catch (TimeoutException)
-                {
-                    OnDeviceConnected?.Invoke("Таймаут при чтении данных.");
-                }
-                catch (Exception ex)
-                {
-                    OnDeviceConnected?.Invoke($"Ошибка чтения данных: {ex.Message}");
-                    Disconnect();
+                    _serialPort.Close();
+                    IsConnected = false;
                 }
             }
         }
 
 
 
-        
-
-        private void ProcessTimeResponse(byte[] response)
-        {
-            if (response.Length < 12)
-            {
-                OnDeviceConnected?.Invoke("Некорректный ответ");
-                return;
-            }
-
-            // Проверка CRC
-            byte crc = 0;
-            for (int i = 0; i < 10; i++)
-            {
-                crc ^= response[i];
-            }
-
-            if (crc != response[11])
-            {
-                OnDeviceConnected?.Invoke("ошибка crc");
-                return;
-            }
-
-            // Получение времени
-            DateTime deviceTime = new DateTime(
-                2000 + response[10], // Год
-                response[9],         // Месяц
-                response[8],         // День
-                response[6],         // Час
-                response[5],         // Минуты
-                response[4]          // Секунды
-            );
-
-            OnDeviceConnected?.Invoke("полученное время");
-            OnDeviceConnected?.Invoke($"Текущее время устройства: {deviceTime}"); // Отправка времени в событие
-        }
 
         public string CheckDeviceStatus()
         {
@@ -237,6 +100,140 @@ namespace WPB_11
                 return "Устройство подключено.";
             }
         }
+
+        private void StartReading()
+        {
+            Thread readThread = new Thread(ReadData);
+            readThread.IsBackground = true; // Поток будет завершен при закрытии приложения
+            readThread.Start();
+        }
+
+        private void SendData(byte[] data)
+        {
+            if (!IsConnected || !_serialPort.IsOpen)
+            {
+                OnDeviceConnected?.Invoke("Устройство не подключено или порт закрыт. Невозможно отправить данные.");
+                return;
+            }
+
+            try
+            {
+                _serialPort.Write(data, 0, data.Length);
+                OnDeviceConnected?.Invoke($"Данные отправлены.");
+            }
+            catch (Exception ex)
+            {
+                OnDeviceConnected?.Invoke("Ошибка при отправке данных: " + ex.Message);
+            }
+        }
+
+
+        private void ReadData()
+        {
+            while (true)
+            {
+                if (!IsConnected)
+                {
+                    OnDeviceConnected?.Invoke("137");
+                    break; // Выходим из цикла, если устройство не подключено
+                }
+
+                try
+                {
+                    if (_serialPort.BytesToRead > 0)
+                    {
+                        byte[] response = new byte[13]; // Предполагаем, что ответ будет 13 байт
+
+                        // Проверяем, достаточно ли данных для чтения
+                        if (_serialPort.BytesToRead >= response.Length)
+                        {
+                            int bytesRead = _serialPort.Read(response, 0, response.Length);
+                            if (bytesRead == response.Length)
+                            {
+                                ProcessReceivedData(response);
+                            }
+                            else
+                            {
+                                OnDeviceConnected?.Invoke("Некорректное количество байтов прочитано.");
+                            }
+                        }
+                        else
+                        {
+                            OnDeviceConnected?.Invoke("Недостаточно данных для чтения.");
+                        }
+                    }
+                }
+                catch (TimeoutException)
+                {
+                    OnDeviceConnected?.Invoke("Таймаут при чтении данных.");
+                }
+                catch (Exception ex)
+                {
+                    OnDeviceConnected?.Invoke($"Ошибка чтения данных: {ex.Message}");
+                    if (IsConnected)
+                    {
+                        Disconnect(); // Вызываем только если устройство было подключено
+                    }
+                    break; // Выходим из цикла
+                }
+            }
+        }
+
+
+
+        public void RequestDateTime()
+        {
+            if (IsConnected)
+            {
+                byte[] sendData = new byte[5] { 0x3F, 0x00, 0x01, 0x26, 0x18 }; // Команда для запроса даты и времени
+
+                OnDeviceConnected?.Invoke("Отправляю команду для получения даты и времени.");
+                OnDeviceConnected?.Invoke($"Отправляю данные: {BitConverter.ToString(sendData)}");
+
+                try
+                {
+                    SendData(sendData);
+                    OnDeviceConnected?.Invoke($"Отправил запрос");
+                    Thread.Sleep(100); // Задержка для обработки команды устройством
+                }
+                catch (Exception ex)
+                {
+                    OnDeviceConnected?.Invoke($"Ошибка при отправке данных: {ex.Message}");
+                    return;
+                }
+            }
+        }
+
+
+        private void ProcessReceivedData(byte[] packetData)
+        {
+            // Проверяем, что пакет содержит достаточно данных
+            if (packetData.Length < 13)
+            {
+                OnDeviceConnected?.Invoke("Недостаточно данных в пакете.");
+                return;
+            }
+
+            // Извлекаем дату и время
+            DateTime VPBDateTime = VPBDateTimeToDateTime(
+                packetData[8],  // Год
+                packetData[9],  // Месяц
+                packetData[10], // День
+                packetData[5],  // Час
+                packetData[6],  // Минуты
+                packetData[7]   // Секунды
+            );
+
+            OnDeviceConnected?.Invoke($"Дата и время: {VPBDateTime}"); // Отображение даты и времени
+                                                               // Вы можете обновить UI элементы здесь, например, текстовые поля
+        }
+
+        private DateTime VPBDateTimeToDateTime(byte year, byte month, byte date, byte hour, byte minute, byte second)
+        {
+            int fullYear = 2000 + year; // Предполагаем, что год начинается с 2000
+            return new DateTime(fullYear, month, date, hour, minute, second);
+        }
+
     }
 
 }

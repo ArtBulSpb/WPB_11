@@ -120,21 +120,38 @@ namespace WPB_11
         {
             deviceConnector = DeviceConnector.Instance();
             deviceConnector.OnDeviceConnected += UpdateStatus; // Подписываемся на событие
+            if (!deviceConnector.IsConnected) // Добавьте проверку
+            {
+                deviceConnector.Connect();
+            }
         }
+
         private void UpdateStatus(string status)
         {
-            statusLabel.Text = status; // Обновляем текст статуса
+            if (statusLabel.InvokeRequired)
+            {
+                // Если метод вызывается не из основного потока, используем Invoke
+                statusLabel.Invoke(new Action<string>(UpdateStatus), status);
+            }
+            else
+            {
+                // Обновляем текст статуса
+                statusLabel.Text = status;
+            }
 
         }
 
         private void StatusCheckTimer_Tick(object sender, EventArgs e)
         {
-
-            deviceConnector.Connect();
+            if (!deviceConnector.IsConnected)
+            {
+                deviceConnector.Connect();
+            }
             // Проверяем состояние устройства и обновляем статус
-            string currentStatus = deviceConnector.CheckDeviceStatus(); // Предполагается, что метод возвращает строку статуса
-            UpdateStatus(currentStatus); // Обновляем статус на интерфейсе
+            string currentStatus = deviceConnector.CheckDeviceStatus();
+            UpdateStatus(currentStatus);
         }
+
 
 
         private void TabButton_Click(object sender, EventArgs e)

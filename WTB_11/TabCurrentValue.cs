@@ -269,7 +269,7 @@ namespace WPB_11
         {
             if (DeviceConnector.Instance().IsConnected)
             {
-                DeviceConnector.Instance().RequestCurrentTime();
+                DeviceConnector.Instance().RequestDateTime();
             }
             else
             {
