@@ -120,7 +120,7 @@ namespace WPB_11
             try
             {
                 _serialPort.Write(data, 0, data.Length);
-                OnDeviceConnected?.Invoke($"Данные отправлены.");
+                OnDeviceConnected?.Invoke($"Данные отправлены. {BitConverter.ToString(data)}");
             }
             catch (Exception ex)
             {
@@ -131,15 +131,9 @@ namespace WPB_11
 
         private void ReadData()
         {
-            OnDeviceConnected?.Invoke("ReadData");
-            while (true)
+            OnDeviceConnected?.Invoke("ReadData started.");
+            while (IsConnected)
             {
-                if (!IsConnected)
-                {
-                    OnDeviceConnected?.Invoke("137");
-                    break; // Выходим из цикла, если устройство не подключено
-                }
-
                 try
                 {
                     if (_serialPort.BytesToRead > 0)
@@ -152,6 +146,7 @@ namespace WPB_11
                             int bytesRead = _serialPort.Read(response, 0, response.Length);
                             if (bytesRead == response.Length)
                             {
+                                OnDeviceConnected?.Invoke("Прочитали данные.");
                                 ProcessReceivedData(response);
                             }
                             else
@@ -166,14 +161,14 @@ namespace WPB_11
                     }
                     else
                     {
-                        OnDeviceConnected?.Invoke("0 байт");
-                        break;
+                     
+                        //OnDeviceConnected?.Invoke($"Прочитано 0 ");
+                        Thread.Sleep(100); // Задержка перед повторной проверкой
                     }
                 }
                 catch (TimeoutException)
                 {
                     OnDeviceConnected?.Invoke("Таймаут при чтении данных.");
-                    // Можно попробовать повторить чтение или просто продолжить цикл
                 }
                 catch (IOException ioEx)
                 {
@@ -187,17 +182,41 @@ namespace WPB_11
                     Disconnect();
                     break;
                 }
-
             }
         }
 
 
+        private byte[] ReceiveData()
+        {
+            // Предположим, что у вас есть объект SerialPort
+            if (_serialPort.IsOpen)
+            {
+                try
+                {
+                    // Дождаться получения данных
+                    int bytesToRead = _serialPort.BytesToRead;
+                    if (bytesToRead > 0)
+                    {
+                        byte[] buffer = new byte[bytesToRead];
+                        _serialPort.Read(buffer, 0, bytesToRead);
+                        return buffer; // Возвращаем полученные данные
+                    }
+                }
+                catch (Exception ex)
+                {
+                    OnDeviceConnected?.Invoke($"Ошибка при получении данных: {ex.Message}");
+                }
+            }
+            return null; // Возвращаем null, если нет данных
+        }
+
 
         public void RequestDateTime()
         {
+            OnDeviceConnected?.Invoke("Отправляю команду для получения даты и времени.");
             if (IsConnected)
             {
-                byte[] sendData = new byte[5] { 0x3F, 0x00, 0x01, 0x2C, 0x12 }; // Команда для запроса даты и времени
+                byte[] sendData = new byte[5] { 0x3F, 0x00, 0x01, 0x01, 0x3F }; // Команда для запроса даты и времени
 
                 OnDeviceConnected?.Invoke("Отправляю команду для получения даты и времени.");
                 OnDeviceConnected?.Invoke($"Отправляю данные: {BitConverter.ToString(sendData)}");
@@ -206,6 +225,17 @@ namespace WPB_11
                 {
                     SendData(sendData);
                     Thread.Sleep(100); // Задержка для обработки команды устройством
+
+                    // Ожидание ответа от устройства
+                    byte[] response = ReceiveData(); // Получите ответ от устройства
+                    if (response != null)
+                    {
+                        OnDeviceConnected?.Invoke($"Получен ответ: {BitConverter.ToString(response)}");
+                    }
+                    else
+                    {
+                        //OnDeviceConnected?.Invoke("Ответ не получен.");
+                    }
                 }
                 catch (Exception ex)
                 {
@@ -214,6 +244,7 @@ namespace WPB_11
                 }
             }
         }
+
 
 
         private void ProcessReceivedData(byte[] packetData)
