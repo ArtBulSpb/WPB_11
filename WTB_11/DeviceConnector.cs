@@ -131,7 +131,7 @@ namespace WPB_11
 
         private void ReadData()
         {
-            OnDeviceConnected?.Invoke("ReadData started.");
+            
             while (IsConnected)
             {
                 try
@@ -230,7 +230,8 @@ namespace WPB_11
                     byte[] response = ReceiveData(); // Получите ответ от устройства
                     if (response != null)
                     {
-                        OnDeviceConnected?.Invoke($"Получен ответ: {BitConverter.ToString(response)}");
+                        ProcessReceivedData(response);
+                        //OnDeviceConnected?.Invoke($"Получен ответ: {BitConverter.ToString(response)}");
                     }
                     else
                     {
@@ -256,25 +257,62 @@ namespace WPB_11
                 return;
             }
 
-            // Извлекаем дату и время
+            // Извлекаем дату и время, преобразуя BCD в десятичные значения
             DateTime VPBDateTime = VPBDateTimeToDateTime(
-                packetData[8],  // Год
-                packetData[9],  // Месяц
-                packetData[10], // День
-                packetData[5],  // Час
-                packetData[6],  // Минуты
-                packetData[7]   // Секунды
+                BCDToDecimal(packetData[9]),  // Год
+                BCDToDecimal(packetData[8]),  // Месяц
+                BCDToDecimal(packetData[7]),  // День
+                BCDToDecimal(packetData[4]),  // Час
+                BCDToDecimal(packetData[5]),  // Минуты
+                BCDToDecimal(packetData[6])    // Секунды
             );
 
             OnDeviceConnected?.Invoke($"Дата и время: {VPBDateTime}"); // Отображение даты и времени
-                                                               // Вы можете обновить UI элементы здесь, например, текстовые поля
         }
 
-        private DateTime VPBDateTimeToDateTime(byte year, byte month, byte date, byte hour, byte minute, byte second)
+
+        private DateTime VPBDateTimeToDateTime(int year, int month, int date, int hour, int minute, int second)
         {
             int fullYear = 2000 + year; // Предполагаем, что год начинается с 2000
+
+            // Проверка на допустимость значений
+            if (month < 1 || month > 12)
+            {
+                throw new ArgumentOutOfRangeException(nameof(month), $"Месяц должен быть в диапазоне от 1 до 12. {year} {month} {date}");
+            }
+
+            // Проверка на количество дней в месяце
+            int daysInMonth = DateTime.DaysInMonth(fullYear, month);
+            if (date < 1 || date > daysInMonth)
+            {
+                throw new ArgumentOutOfRangeException(nameof(date), $"День должен быть в диапазоне от 1 до {daysInMonth} для месяца {month}.");
+            }
+
+            // Проверка на допустимость времени
+            if (hour < 0 || hour > 23)
+            {
+                throw new ArgumentOutOfRangeException(nameof(hour), "Час должен быть в диапазоне от 0 до 23.");
+            }
+            if (minute < 0 || minute > 59)
+            {
+                throw new ArgumentOutOfRangeException(nameof(minute), "Минуты должны быть в диапазоне от 0 до 59.");
+            }
+            if (second < 0 || second > 59)
+            {
+                throw new ArgumentOutOfRangeException(nameof(second), "Секунды должны быть в диапазоне от 0 до 59.");
+            }
+
+            OnDeviceConnected?.Invoke($"Полученные данные: Год={fullYear}, Месяц={month}, День={date}, Час={hour}, Минуты={minute}, Секунды={second}");
             return new DateTime(fullYear, month, date, hour, minute, second);
         }
+
+
+        private int BCDToDecimal(byte bcd)
+        {
+            return ((bcd >> 4) & 0x0F) * 10 + (bcd & 0x0F);
+        }
+
+
 
     }
 
