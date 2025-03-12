@@ -27,7 +27,7 @@ namespace WPB_11
                 StopBits = StopBits.One,
                 DataBits = 8,
                 Handshake = Handshake.None,
-                ReadTimeout = 5000,
+                ReadTimeout = 3000,
             };
         }
 
@@ -110,6 +110,7 @@ namespace WPB_11
 
         private void SendData(byte[] data)
         {
+            OnDeviceConnected?.Invoke("SendData");
             if (!IsConnected || !_serialPort.IsOpen)
             {
                 OnDeviceConnected?.Invoke("Устройство не подключено или порт закрыт. Невозможно отправить данные.");
@@ -130,6 +131,7 @@ namespace WPB_11
 
         private void ReadData()
         {
+            OnDeviceConnected?.Invoke("ReadData");
             while (true)
             {
                 if (!IsConnected)
@@ -162,20 +164,30 @@ namespace WPB_11
                             OnDeviceConnected?.Invoke("Недостаточно данных для чтения.");
                         }
                     }
+                    else
+                    {
+                        OnDeviceConnected?.Invoke("0 байт");
+                        break;
+                    }
                 }
                 catch (TimeoutException)
                 {
                     OnDeviceConnected?.Invoke("Таймаут при чтении данных.");
+                    // Можно попробовать повторить чтение или просто продолжить цикл
+                }
+                catch (IOException ioEx)
+                {
+                    OnDeviceConnected?.Invoke($"Ошибка ввода-вывода: {ioEx.Message}");
+                    Disconnect();
+                    break;
                 }
                 catch (Exception ex)
                 {
                     OnDeviceConnected?.Invoke($"Ошибка чтения данных: {ex.Message}");
-                    if (IsConnected)
-                    {
-                        Disconnect(); // Вызываем только если устройство было подключено
-                    }
-                    break; // Выходим из цикла
+                    Disconnect();
+                    break;
                 }
+
             }
         }
 
@@ -185,7 +197,7 @@ namespace WPB_11
         {
             if (IsConnected)
             {
-                byte[] sendData = new byte[5] { 0x3F, 0x00, 0x01, 0x26, 0x18 }; // Команда для запроса даты и времени
+                byte[] sendData = new byte[5] { 0x3F, 0x00, 0x01, 0x2C, 0x12 }; // Команда для запроса даты и времени
 
                 OnDeviceConnected?.Invoke("Отправляю команду для получения даты и времени.");
                 OnDeviceConnected?.Invoke($"Отправляю данные: {BitConverter.ToString(sendData)}");
@@ -193,7 +205,6 @@ namespace WPB_11
                 try
                 {
                     SendData(sendData);
-                    OnDeviceConnected?.Invoke($"Отправил запрос");
                     Thread.Sleep(100); // Задержка для обработки команды устройством
                 }
                 catch (Exception ex)

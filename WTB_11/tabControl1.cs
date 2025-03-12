@@ -26,7 +26,7 @@ namespace WPB_11
             TabNames = tabNames;
             InitializeComponents();
             InitializeDeviceConnector("COM3");
-            deviceConnector.Connect();
+            //deviceConnector.Connect();
 
             // Настройка таймера
             statusCheckTimer = new System.Windows.Forms.Timer();
