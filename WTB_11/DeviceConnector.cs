@@ -60,7 +60,7 @@ namespace WPB_11
                     {
                         // Проверяем доступные порты
                         string[] ports = SerialPort.GetPortNames();
-                        OnDeviceConnected?.Invoke("Доступные порты: " + string.Join(", ", ports));
+                        //OnDeviceConnected?.Invoke("Доступные порты: " + string.Join(", ", ports));
 
                         _serialPort.Open();
                         IsConnected = true;

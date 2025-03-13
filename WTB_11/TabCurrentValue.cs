@@ -10,6 +10,8 @@ namespace WPB_11
     {
         private DeviceConnector _deviceConnector;
         private RoundedTextBox systemTime;
+        private RoundedTextBox deviceTime;
+        private System.Windows.Forms.Timer _updateTimer; // Таймер для периодического обновления
 
         public void ShowTabContent(Panel contentPanel, string[] TabNames)
         {
@@ -22,6 +24,14 @@ namespace WPB_11
             // Создаем элементы управления
             ArrowButton arrowButton = new ArrowButton("G:\\VisualStudio\\repos\\WTB_11\\WTB_11\\Img\\arrow.PNG", 90 , 200);
             arrowButton.Click += ArrowButton_Click;
+
+            // Инициализация таймера
+            _updateTimer = new System.Windows.Forms.Timer();
+            _updateTimer.Interval = 1000; // Обновление каждую секунду
+            _updateTimer.Tick += UpdateDeviceTime; // Подписка на событие
+            _updateTimer.Start(); // Запуск таймера
+
+            
 
 
             CustomCheckedListBox customCheckedListBoxWinches = new CustomCheckedListBox("Список лебедок(1-8):")
@@ -88,8 +98,19 @@ namespace WPB_11
             var errors = new RoundedTextBox("Ошибки:") { PlaceholderText = "значение появляется при подключении прибора" };
 
             systemTime = new RoundedTextBox("Дата и время в системе") { PlaceholderText = "" };
-            var deviceTime = new RoundedTextBox("Дата и время в приборе") { PlaceholderText = "значение появляется при подключении прибора" };
-                
+            deviceTime = new RoundedTextBox("Дата и время в приборе") { PlaceholderText = "значение появляется при подключении прибора" };
+
+
+            // Проверяем подключение устройства
+            if (_deviceConnector.IsConnected)
+            {
+                systemTime.Text = "Устройство подключено";
+                _deviceConnector.RequestDateTime(); // Запрос даты и времени при открытии вкладки
+            }
+            else
+            {
+                systemTime.Text = "Устройство не подключено";
+            }
 
             // Создаем TableLayoutPanel
             TableLayoutPanel mainLayout = new TableLayoutPanel
@@ -267,26 +288,28 @@ namespace WPB_11
         }
         private void ArrowButton_Click(object sender, EventArgs e)
         {
+            
+        }
+
+        private void UpdateDeviceTime(object sender, EventArgs e)
+        {
             if (DeviceConnector.Instance().IsConnected)
             {
                 DeviceConnector.Instance().RequestDateTime();
-            }
-            else
-            {
-                MessageBox.Show("Устройство не подключено.");
             }
         }
 
         private void UpdateStatus(string message)
         {
             // Обновляем текстовый бокс с текущим временем устройства
-            if (systemTime.InvokeRequired)
+            if (deviceTime.InvokeRequired)
             {
-                systemTime.Invoke(new Action<string>(UpdateStatus), message);
+                deviceTime.Invoke(new Action<string>(UpdateStatus), message);
             }
             else
             {
-                systemTime.Text = message; // Обновляем текст
+                systemTime.Text = DateTime.Now.ToString("dd.MM.yyyy HH:mm:ss");
+                deviceTime.Text = message; // Обновляем текст
             }
         }
     }
