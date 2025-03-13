@@ -101,16 +101,7 @@ namespace WPB_11
             deviceTime = new RoundedTextBox("Дата и время в приборе") { PlaceholderText = "значение появляется при подключении прибора" };
 
 
-            // Проверяем подключение устройства
-            if (_deviceConnector.IsConnected)
-            {
-                systemTime.Text = "Устройство подключено";
-                _deviceConnector.RequestDateTime(); // Запрос даты и времени при открытии вкладки
-            }
-            else
-            {
-                systemTime.Text = "Устройство не подключено";
-            }
+            
 
             // Создаем TableLayoutPanel
             TableLayoutPanel mainLayout = new TableLayoutPanel
@@ -288,14 +279,18 @@ namespace WPB_11
         }
         private void ArrowButton_Click(object sender, EventArgs e)
         {
-            
+            if (DeviceConnector.Instance().IsConnected)
+            {
+                DeviceConnector.Instance().Request(DeviceCommands.SetDateTime);
+            }
         }
 
         private void UpdateDeviceTime(object sender, EventArgs e)
         {
             if (DeviceConnector.Instance().IsConnected)
             {
-                DeviceConnector.Instance().RequestDateTime();
+                DeviceConnector.Instance().Request(DeviceCommands.RequestDateTime);
+
             }
         }
 
