@@ -7,7 +7,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using WPB_11.DataStructures;
 
-namespace WPB_11
+namespace WPB_11.Device
 {
     public class DeviceConnector
     {
@@ -16,11 +16,11 @@ namespace WPB_11
         public bool IsConnected { get; private set; }
 
         public event Action<string> OnDeviceConnected;
-        private bool _waitingForTimeResponse = false;
-        private DataProcessor _dataProcessor;
+        private DevicePackets _devicePackets; // Добавляем поле для хранения экземпляра DevicePackets
 
-        private DeviceConnector(string portName)
+        private DeviceConnector(string portName, DevicePackets devicePackets)
         {
+            _devicePackets = devicePackets; // Сохраняем переданный экземпляр
             _serialPort = new SerialPort(portName)
             {
                 BaudRate = 9600,
@@ -32,11 +32,11 @@ namespace WPB_11
             };
         }
 
-        public static DeviceConnector Instance(string portName = "COM3")
+        public static DeviceConnector Instance(string portName = "COM3", DevicePackets devicePackets = null)
         {
             if (_instance == null)
             {
-                _instance = new DeviceConnector(portName);
+                _instance = new DeviceConnector(portName, devicePackets);
             }
             return _instance;
         }
@@ -105,7 +105,7 @@ namespace WPB_11
 
         private void SendData(byte[] data)
         {
-            OnDeviceConnected?.Invoke("SendData");
+            //OnDeviceConnected?.Invoke("SendData");
             if (!IsConnected || !_serialPort.IsOpen)
             {
                 OnDeviceConnected?.Invoke("Устройство не подключено или порт закрыт. Невозможно отправить данные.");
@@ -115,11 +115,11 @@ namespace WPB_11
             try
             {
                 _serialPort.Write(data, 0, data.Length);
-                OnDeviceConnected?.Invoke($"Данные отправлены. {BitConverter.ToString(data)}");
+                //OnDeviceConnected?.Invoke($"Данные отправлены. {BitConverter.ToString(data)}");
             }
             catch (Exception ex)
             {
-                OnDeviceConnected?.Invoke("Ошибка при отправке данных: " + ex.Message);
+                //OnDeviceConnected?.Invoke("Ошибка при отправке данных: " + ex.Message);
             }
         }
 
@@ -150,10 +150,10 @@ namespace WPB_11
 
         public void Request(byte[] sendData)
         {
-            OnDeviceConnected?.Invoke("Отправляю команду для получения даты и времени.");
+            //OnDeviceConnected?.Invoke("Отправляю команду для получения даты и времени.");
             if (IsConnected)
             {
-                OnDeviceConnected?.Invoke($"Отправляю данные: {BitConverter.ToString(sendData)}");
+                //OnDeviceConnected?.Invoke($"Отправляю данные: {BitConverter.ToString(sendData)}");
 
                 try
                 {
@@ -190,60 +190,27 @@ namespace WPB_11
                 return;
             }
 
-            // Извлекаем дату и время, преобразуя BCD в десятичные значения
-            DateTime VPBDateTime = VPBDateTimeToDateTime(
-                BCDToDecimal(packetData[9]),  // Год
-                BCDToDecimal(packetData[8]),  // Месяц
-                BCDToDecimal(packetData[7]),  // День
-                BCDToDecimal(packetData[4]),  // Час
-                BCDToDecimal(packetData[5]),  // Минуты
-                BCDToDecimal(packetData[6])    // Секунды
-            );
+            // Извлекаем айди пакета из четвертого байта
+            byte packetId = packetData[3];
 
-            OnDeviceConnected?.Invoke($"Дата и время: {VPBDateTime}"); // Отображение даты и времени
+            switch (packetId)
+            {
+                case 1: // пакет дата время температура
+                    _devicePackets.ProcessDateTimePacket(packetData);
+                    break;
+
+                case 3: // пакет все про прибо и кран
+                    _devicePackets.ProcessVPBCurr(packetData);
+                    break;
+
+                default:
+                    OnDeviceConnected?.Invoke("Неизвестный тип пакета.");
+                    break;
+            }
         }
 
 
-        private DateTime VPBDateTimeToDateTime(int year, int month, int date, int hour, int minute, int second)
-        {
-            int fullYear = 2000 + year; // Предполагаем, что год начинается с 2000
 
-            // Проверка на допустимость значений
-            if (month < 1 || month > 12)
-            {
-                throw new ArgumentOutOfRangeException(nameof(month), $"Месяц должен быть в диапазоне от 1 до 12. {year} {month} {date}");
-            }
-
-            // Проверка на количество дней в месяце
-            int daysInMonth = DateTime.DaysInMonth(fullYear, month);
-            if (date < 1 || date > daysInMonth)
-            {
-                throw new ArgumentOutOfRangeException(nameof(date), $"День должен быть в диапазоне от 1 до {daysInMonth} для месяца {month}.");
-            }
-
-            // Проверка на допустимость времени
-            if (hour < 0 || hour > 23)
-            {
-                throw new ArgumentOutOfRangeException(nameof(hour), "Час должен быть в диапазоне от 0 до 23.");
-            }
-            if (minute < 0 || minute > 59)
-            {
-                throw new ArgumentOutOfRangeException(nameof(minute), "Минуты должны быть в диапазоне от 0 до 59.");
-            }
-            if (second < 0 || second > 59)
-            {
-                throw new ArgumentOutOfRangeException(nameof(second), "Секунды должны быть в диапазоне от 0 до 59.");
-            }
-
-            OnDeviceConnected?.Invoke($"Полученные данные: Год={fullYear}, Месяц={month}, День={date}, Час={hour}, Минуты={minute}, Секунды={second}");
-            return new DateTime(fullYear, month, date, hour, minute, second);
-        }
-
-
-        private int BCDToDecimal(byte bcd)
-        {
-            return ((bcd >> 4) & 0x0F) * 10 + (bcd & 0x0F);
-        }
     }
 
 }

@@ -1,7 +1,10 @@
 ﻿using System;
 using System.Data;
+using System.Diagnostics;
 using System.Linq;
 using System.Windows.Forms;
+using WPB_11.DataStructures;
+using WPB_11.Device;
 using static WPB_11.RoundedTextBox;
 
 namespace WPB_11
@@ -9,17 +12,29 @@ namespace WPB_11
     class TabCurrentValue
     {
         private DeviceConnector _deviceConnector;
+        private DevicePackets devicePackets;
+
         private RoundedTextBox systemTime;
         private RoundedTextBox deviceTime;
+        private RoundedTextBox sensorsCountField1;
+        private RoundedTextBox sensorsCountField2;
+        private RoundedTextBox effortOnSensorsField1;
+        private RoundedTextBox effortOnSensorsField2;
+        private RoundedTextBox cargoMassField1;
+        private RoundedTextBox cargoMassField2;
+        private RoundedTextBox loadPercentageField1;
+        private RoundedTextBox loadPercentageField2;
+
         private System.Windows.Forms.Timer _updateTimer; // Таймер для периодического обновления
+        
 
         public void ShowTabContent(Panel contentPanel, string[] TabNames)
         {
             contentPanel.Controls.Clear();
 
-            _deviceConnector = DeviceConnector.Instance("COM3");
+            devicePackets = new DevicePackets();
+            _deviceConnector = DeviceConnector.Instance("COM3", devicePackets);
 
-            _deviceConnector.OnDeviceConnected += UpdateStatus;
 
             // Создаем элементы управления
             ArrowButton arrowButton = new ArrowButton("G:\\VisualStudio\\repos\\WTB_11\\WTB_11\\Img\\arrow.PNG", 90 , 200);
@@ -27,11 +42,15 @@ namespace WPB_11
 
             // Инициализация таймера
             _updateTimer = new System.Windows.Forms.Timer();
-            _updateTimer.Interval = 1000; // Обновление каждую секунду
+            _updateTimer.Interval = 10000; // Обновление каждую секунду
             _updateTimer.Tick += UpdateDeviceTime; // Подписка на событие
             _updateTimer.Start(); // Запуск таймера
 
-            
+           
+
+            // Подписка на события
+            devicePackets.DateTimeProcessed += HandleDateTimeProcessed;
+            devicePackets.VPBCurrProcessed += HandleVPBCurrProcessed;
 
 
             CustomCheckedListBox customCheckedListBoxWinches = new CustomCheckedListBox("Список лебедок(1-8):")
@@ -54,11 +73,11 @@ namespace WPB_11
                 BackColor = Color.Transparent, // Делаем фон метки прозрачным
                 Font = FontManager.GetSemiBoldFont(12),
             };
-            var sensorsCountField1 = new RoundedTextBox("Количество датчиков:") { PlaceholderText = "значение появляется при подключении прибора" };
-            var effortOnSensorsField1 = new RoundedTextBox("Усилие на датчиках:") { PlaceholderText = "значение появляется при подключении прибора" };
+            sensorsCountField1 = new RoundedTextBox("Количество датчиков:") { PlaceholderText = "значение появляется при подключении прибора" };
+            effortOnSensorsField1 = new RoundedTextBox("Усилие на датчиках:") { PlaceholderText = "значение появляется при подключении прибора" };
             var totalEffortField1 = new RoundedTextBox("Суммарное усилие:") { PlaceholderText = "значение появляется при подключении прибора" };
-            var cargoMassField1 = new RoundedTextBox("Масса груза:") { PlaceholderText = "значение появляется при подключении прибора" };
-            var loadPercentageField1 = new RoundedTextBox("Процент загрузки:") { PlaceholderText = "значение появляется при подключении прибора" };
+            cargoMassField1 = new RoundedTextBox("Масса груза:") { PlaceholderText = "значение появляется при подключении прибора" };
+            loadPercentageField1 = new RoundedTextBox("Процент загрузки:") { PlaceholderText = "значение появляется при подключении прибора" };
 
             //Лебедка 2
             var label2 = new Label()
@@ -70,11 +89,11 @@ namespace WPB_11
                 BackColor = Color.Transparent, // Делаем фон метки прозрачным
                 Font = FontManager.GetSemiBoldFont(12),
             };
-            var sensorsCountField2 = new RoundedTextBox("Количество датчиков:") { PlaceholderText = "значение появляется при подключении прибора" };
-            var effortOnSensorsField2 = new RoundedTextBox("Усилие на датчиках:") { PlaceholderText = "значение появляется при подключении прибора" };
+            sensorsCountField2 = new RoundedTextBox("Количество датчиков:") { PlaceholderText = "значение появляется при подключении прибора" };
+            effortOnSensorsField2 = new RoundedTextBox("Усилие на датчиках:") { PlaceholderText = "значение появляется при подключении прибора" };
             var totalEffortField2 = new RoundedTextBox("Суммарное усилие:") { PlaceholderText = "значение появляется при подключении прибора" };
-            var cargoMassField2 = new RoundedTextBox("Масса груза:") { PlaceholderText = "значение появляется при подключении прибора" };
-            var loadPercentageField2 = new RoundedTextBox("Процент загрузки:") { PlaceholderText = "значение появляется при подключении прибора" };
+            cargoMassField2 = new RoundedTextBox("Масса груза:") { PlaceholderText = "значение появляется при подключении прибора" };
+            loadPercentageField2 = new RoundedTextBox("Процент загрузки:") { PlaceholderText = "значение появляется при подключении прибора" };
 
             //Лебедка 3
             var label3 = new Label()
@@ -287,19 +306,22 @@ namespace WPB_11
 
         private void UpdateDeviceTime(object sender, EventArgs e)
         {
+            Debug.WriteLine("Пишу что-то");
             if (DeviceConnector.Instance().IsConnected)
             {
                 DeviceConnector.Instance().Request(DeviceCommands.RequestDateTime);
+                DeviceConnector.Instance().Request(DeviceCommands.RequestTp);
 
             }
         }
 
-        private void UpdateStatus(string message)
+
+        private void HandleDateTimeProcessed(string message)
         {
-            // Обновляем текстовый бокс с текущим временем устройства
+            //Debug.WriteLine("HandleDateTimeProcessed вызван"); 
             if (deviceTime.InvokeRequired)
             {
-                deviceTime.Invoke(new Action<string>(UpdateStatus), message);
+                deviceTime.Invoke(new Action<string>(HandleDateTimeProcessed), message);
             }
             else
             {
@@ -307,5 +329,36 @@ namespace WPB_11
                 deviceTime.Text = message; // Обновляем текст
             }
         }
+
+        private void HandleVPBCurrProcessed(VPBCurrType.VPBCurrTypeStruct sensorData)
+        {
+            Debug.WriteLine("HandleSensorsCountProcessed вызван"); // Отладочное сообщение
+
+            if (sensorsCountField1.InvokeRequired)
+            {
+                sensorsCountField1.Invoke(new Action<VPBCurrType.VPBCurrTypeStruct>(HandleVPBCurrProcessed), sensorData);
+            }
+            else
+            {
+                // Проверяем, есть ли данные
+                if (sensorData.DTT.Year != 0) // Предположим, что 0 - это невалидное значение года
+                {
+                    // Обновляем текстовые поля на основе данных
+                    deviceTime.Text = $"{sensorData.DTT.Year}-{sensorData.DTT.Month}-{sensorData.DTT.Date} {sensorData.DTT.Hour}:{sensorData.DTT.Minute}:{sensorData.DTT.Second}";
+                    effortOnSensorsField1.Text = sensorData.CurrForce1.ToString();
+                    effortOnSensorsField2.Text = sensorData.CurrForce2.ToString();
+                    cargoMassField1.Text = $"{sensorData.CurrQ1} кг";
+                    cargoMassField2.Text = $"{sensorData.CurrQ2} кг";
+                    loadPercentageField1.Text = $"{sensorData.CurrPercent1}%";
+                    loadPercentageField2.Text = $"{sensorData.CurrPercent2}%";
+                }
+                else
+                {
+                    // Обработка случая, когда данные отсутствуют
+                    Debug.WriteLine("Нет данных для обновления интерфейса.");
+                }
+            }
+        }
+
     }
 }

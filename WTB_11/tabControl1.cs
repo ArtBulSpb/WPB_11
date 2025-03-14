@@ -6,6 +6,7 @@ using System.Threading.Tasks;
 using System.Drawing;
 using System.Windows.Forms;
 using System.Data;
+using WPB_11.Device;
 
 namespace WPB_11
 {

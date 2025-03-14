@@ -6,12 +6,13 @@ using System.Text;
 using System.Threading.Tasks;
 using static System.Runtime.InteropServices.JavaScript.JSType;
 
-namespace WPB_11
+namespace WPB_11.Device
 {
     class DeviceCommands
     {
         public static readonly byte[] RequestDateTime = new byte[5] { 0x3F, 0x00, 0x01, 0x01, 0x3F }; // Команда для запроса даты, времени и температуры
         public static readonly byte[] SetDateTime = CreateSetDateTime(); // Команда для установки даты и времени
+        public static readonly byte[] RequestTp = new byte[5] { 0x3F, 0x00, 0x06, 0x0A, 0x00 }; // запрос текущих параметров
         public static readonly byte[] RequestVPBCrane = new byte[5] { 0x3F, 0x00, 0x01, 0x03, 0x3D }; //запрос все про прибор и кран (VPBCrane)
         public static readonly byte[] RequestTP = new byte[5] { 0x3F, 0x00, 0x01, 0x04, 0x3A }; //Запрос на TPPoint и TPSize(TPInfo) 
         public static readonly byte[] SetDeviceNumber = new byte[5] { 0x3F, 0x00, 0x01, 0x04, 0x3A }; //установить номер прибора 3F 00 0C 05 …data 11 bytes…. KC
@@ -49,7 +50,7 @@ namespace WPB_11
 
         public static byte IntToBCD(int value)
         {
-            return (byte)((value / 10) << 4 | (value % 10)); // Преобразование в BCD
+            return (byte)(value / 10 << 4 | value % 10); // Преобразование в BCD
         }
 
 

@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace WPB_11.DataStructures
 {
-    class VPBDateTimeTemp
+    public class VPBDateTimeTemp
     {
         public struct VPBDateTimeTempStruct
         {
