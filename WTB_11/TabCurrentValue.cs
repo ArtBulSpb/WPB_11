@@ -24,6 +24,11 @@ namespace WPB_11
         private RoundedTextBox cargoMassField2;
         private RoundedTextBox loadPercentageField1;
         private RoundedTextBox loadPercentageField2;
+        private RoundedTextBox totalEffortField1;
+        private RoundedTextBox totalEffortField2;
+        private CTextBox windSpeedField;
+        private RoundedTextBox temperatureInBlockField;
+        private RoundedTextBox errors;
 
         private System.Windows.Forms.Timer _updateTimer; // Таймер для периодического обновления
         
@@ -75,7 +80,7 @@ namespace WPB_11
             };
             sensorsCountField1 = new RoundedTextBox("Количество датчиков:") { PlaceholderText = "значение появляется при подключении прибора" };
             effortOnSensorsField1 = new RoundedTextBox("Усилие на датчиках:") { PlaceholderText = "значение появляется при подключении прибора" };
-            var totalEffortField1 = new RoundedTextBox("Суммарное усилие:") { PlaceholderText = "значение появляется при подключении прибора" };
+            totalEffortField1 = new RoundedTextBox("Суммарное усилие:") { PlaceholderText = "значение появляется при подключении прибора" };
             cargoMassField1 = new RoundedTextBox("Масса груза:") { PlaceholderText = "значение появляется при подключении прибора" };
             loadPercentageField1 = new RoundedTextBox("Процент загрузки:") { PlaceholderText = "значение появляется при подключении прибора" };
 
@@ -91,7 +96,7 @@ namespace WPB_11
             };
             sensorsCountField2 = new RoundedTextBox("Количество датчиков:") { PlaceholderText = "значение появляется при подключении прибора" };
             effortOnSensorsField2 = new RoundedTextBox("Усилие на датчиках:") { PlaceholderText = "значение появляется при подключении прибора" };
-            var totalEffortField2 = new RoundedTextBox("Суммарное усилие:") { PlaceholderText = "значение появляется при подключении прибора" };
+            totalEffortField2 = new RoundedTextBox("Суммарное усилие:") { PlaceholderText = "значение появляется при подключении прибора" };
             cargoMassField2 = new RoundedTextBox("Масса груза:") { PlaceholderText = "значение появляется при подключении прибора" };
             loadPercentageField2 = new RoundedTextBox("Процент загрузки:") { PlaceholderText = "значение появляется при подключении прибора" };
 
@@ -112,9 +117,9 @@ namespace WPB_11
             var loadPercentageField3 = new RoundedTextBox("Процент загрузки:") { PlaceholderText = "значение появляется при подключении прибора" };
 
 
-            var windSpeedField = new CTextBox("Скорость ветра:") { PlaceholderText = "Скорость ветра (коэфф.)" };
-            var temperatureInBlockField = new RoundedTextBox("Температура в блоке:") { PlaceholderText = "значение появляется при подключении прибора" };
-            var errors = new RoundedTextBox("Ошибки:") { PlaceholderText = "значение появляется при подключении прибора" };
+            windSpeedField = new CTextBox("Скорость ветра:") { PlaceholderText = "Скорость ветра (коэфф.)" };
+            temperatureInBlockField = new RoundedTextBox("Температура в блоке:") { PlaceholderText = "значение появляется при подключении прибора" };
+            errors = new RoundedTextBox("Ошибки:") { PlaceholderText = "значение появляется при подключении прибора" };
 
             systemTime = new RoundedTextBox("Дата и время в системе") { PlaceholderText = "" };
             deviceTime = new RoundedTextBox("Дата и время в приборе") { PlaceholderText = "значение появляется при подключении прибора" };
@@ -316,17 +321,34 @@ namespace WPB_11
         }
 
 
-        private void HandleDateTimeProcessed(string message)
+        private void HandleDateTimeProcessed(VPBCurrType.VPBCurrTypeStruct sensorData)
         {
             Debug.WriteLine("HandleDateTimeProcessed вызван"); 
             if (deviceTime.InvokeRequired)
             {
-                deviceTime.Invoke(new Action<string>(HandleDateTimeProcessed), message);
+                deviceTime.Invoke(new Action<VPBCurrType.VPBCurrTypeStruct>(HandleDateTimeProcessed), sensorData);
             }
             else
             {
                 systemTime.Text = DateTime.Now.ToString("dd.MM.yyyy HH:mm:ss");
-                deviceTime.Text = message; // Обновляем текст
+                if (sensorData.DTT.Year != 0) // Предположим, что 0 - это невалидное значение года
+                {
+                    // Обновляем текстовые поля на основе данных
+                    deviceTime.Text = $"{sensorData.DTT.Year}-{sensorData.DTT.Month}-{sensorData.DTT.Date} {sensorData.DTT.Hour}:{sensorData.DTT.Minute}:{sensorData.DTT.Second}";
+                    effortOnSensorsField1.Text = sensorData.CurrForce1.ToString();
+                    effortOnSensorsField2.Text = sensorData.CurrForce2.ToString();
+                    cargoMassField1.Text = $"{sensorData.CurrQ1} кг";
+                    cargoMassField2.Text = $"{sensorData.CurrQ2} кг";
+                    totalEffortField1.Text = sensorData.SummForce1.ToString();
+                    totalEffortField2.Text = sensorData.SummForce2.ToString();
+                    loadPercentageField1.Text = $"{sensorData.CurrPercent1}%";
+                    loadPercentageField2.Text = $"{sensorData.CurrPercent2}%";
+                    temperatureInBlockField.Text = $"{sensorData.Temperature}℃";
+                    windSpeedField.Text = $"{sensorData.WindForce}м/с";
+                    errors.Text = $"{sensorData.Errors}";
+                    sensorsCountField1.Text = " ";
+                    sensorsCountField2.Text = " ";
+                }
             }
         }
 

@@ -195,7 +195,7 @@ namespace WPB_11.Device
 
             // Извлекаем айди пакета из четвертого байта
             byte packetId = packetData[3];
-
+            Debug.WriteLine($"Id {packetId}");
             switch (packetId)
             {
                 case 1: // пакет дата время температура
@@ -204,7 +204,7 @@ namespace WPB_11.Device
                     break;
 
                 case 3: // запрос текущих параметров
-                    _devicePackets.ProcessVPBCurr(packetData);
+                    //_devicePackets.ProcessVPBCurr(packetData);
                     break;
 
                 default:

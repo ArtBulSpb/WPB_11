@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
+using System.Net.Sockets;
 using System.Text;
 using System.Threading.Tasks;
 using WPB_11.DataStructures;
@@ -11,70 +12,73 @@ namespace WPB_11.Device
     public class DevicePackets
     {
 
-        public event Action<string> DateTimeProcessed;
+        public event Action<VPBCurrType.VPBCurrTypeStruct> DateTimeProcessed;
         public event Action<VPBCurrType.VPBCurrTypeStruct> VPBCurrProcessed;
 
 
         public void ProcessDateTimePacket(byte[] packetData)
         {
-            Debug.WriteLine("ProcessDateTimePacket вызван");
-            // Извлекаем дату и время, преобразуя BCD в десятичные значения
-            DateTime VPBDateTime = VPBDateTimeToDateTime(
-                BCDToDecimal(packetData[9]),  // Год
-                BCDToDecimal(packetData[8]),  // Месяц
-                BCDToDecimal(packetData[7]),  // День
-                BCDToDecimal(packetData[4]),  // Час
-                BCDToDecimal(packetData[5]),  // Минуты
-                BCDToDecimal(packetData[6])    // Секунды
-            );
-            DateTimeProcessed?.Invoke($"Дата и время: {VPBDateTime}"); // Отображение даты и времени
-        }
-
-
-        public void ProcessVPBCurr(byte[] packetData)
-        {
-            Debug.WriteLine($"Обработка VPBCurr: {BitConverter.ToString(packetData)}"); // Отладочное сообщение
-
-            // Проверяем CRC
-            byte crc = 0;
-            for (int i = 0; i < (packetData[2] * 256 + packetData[3] + 3); i++)
-            {
-                crc ^= packetData[i]; // CRC
-            }
-
-            if (crc != packetData[packetData[2] * 256 + packetData[3] + 4])
-            {
-                Console.WriteLine($"Ошибка CRC. Посчитал: {crc:X2}. Получил: {packetData[packetData[2] * 256 + packetData[3] + 4]:X2}");
-                return; // Ошибка CRC
-            }
-
-            // Создаём экземпляр структуры
+            Debug.WriteLine($"ProcessDateTimePacket вызван {BitConverter.ToString(packetData)}");
+            // Создание структуры для текущих значений
             VPBCurrType.VPBCurrTypeStruct sensorData = new VPBCurrType.VPBCurrTypeStruct
             {
                 DTT = new VPBDateTimeTemp.VPBDateTimeTempStruct
                 {
-                    Hour = packetData[5],
-                    Minute = packetData[6],
-                    Second = packetData[7],
-                    Date = packetData[8],
-                    Month = packetData[9],
-                    Year = packetData[10]
+                    Hour = BCDToDecimal(packetData[4]),  // Час
+                    Minute = BCDToDecimal(packetData[5]),  // Минуты
+                    Second = BCDToDecimal(packetData[6]),    // Секунды
+                    Date = BCDToDecimal(packetData[7]),  // День
+                    Month = BCDToDecimal(packetData[8]),  // Месяц
+                    Year = BCDToDecimal(packetData[9]),  // Год  
                 },
-                CurrForce1 = BitConverter.ToUInt16(new byte[] { packetData[13], packetData[14] }, 0),
-                CurrForce2 = BitConverter.ToUInt16(new byte[] { packetData[15], packetData[16] }, 0),
-                CurrQ1 = BitConverter.ToInt32(packetData, 17),
-                CurrQ2 = BitConverter.ToInt32(packetData, 21),
-                CurrPercent1 = packetData[25],
-                CurrPercent2 = packetData[26]
+                CurrForce1 = BitConverter.ToUInt16(new byte[] { packetData[12], packetData[13] }, 0),
+                CurrForce2 = BitConverter.ToUInt16(new byte[] { packetData[14], packetData[15] }, 0),
+                CurrQ1 = BitConverter.ToInt32(packetData, 16),
+                CurrQ2 = BitConverter.ToInt32(packetData, 20),
+                CurrPercent1 = packetData[24],
+                CurrPercent2 = packetData[25],
+                
             };
+            // Вычисление суммарного усилия с обработкой переполнения
+            if (sensorData.CurrForce1 != 0 && sensorData.CurrForce1 != 0)
+            {
+                Debug.WriteLine($"IF вызван {BitConverter.ToString(packetData)}");
+                sensorData.SummForce1 = (ushort)Math.Min((uint)sensorData.CurrForce1 + (uint)sensorData.CurrForce2, ushort.MaxValue);
+                sensorData.SummForce2 = (ushort)Math.Min((uint)sensorData.CurrForce1 + (uint)sensorData.CurrForce2, ushort.MaxValue);
+            }
+            // Добавляем режим настройки
+            sensorData.SetupMode = (packetData[27] & 128) != 0; // Режим настройки
 
-            Debug.WriteLine($"Данные датчиков: {sensorData}"); // Отладочное сообщение
-            VPBCurrProcessed?.Invoke(sensorData);
+            // Добавляем ошибки
+            byte value = (byte)(packetData[27] & 127);
+            sensorData.Errors = value.ToString();
+
+            // Добавляем температуру
+            string value1 = packetData[10].ToString(); 
+            float value2 = ((float)(packetData[11] >> 6) * 25);
+            sensorData.Temperature = $"{value1},{value2}"; 
+
+            // Добавляем силу ветра
+            sensorData.WindForce = (byte)(packetData[26] / 10); // Сила ветра
+
+            // Датчики
+            byte[] sensorNumbers = new byte[4];
+            byte[] efforts = new byte[4];
+
+            // Получение номеров датчиков
+            for (int i = 0; i < 4; i++)
+            {
+                sensorNumbers[i] = (byte)packetData[17 + i]; // номера датчиков
+            }
+
+            // Получение усилия
+            for (int i = 0; i < 4; i++)
+            {
+                efforts[i] = (byte)packetData[21 + i]; // усилие
+            }
+
+            DateTimeProcessed?.Invoke(sensorData); // Отображение даты и времени
         }
-
-
-
-
 
 
         private DateTime VPBDateTimeToDateTime(int year, int month, int date, int hour, int minute, int second)
@@ -116,25 +120,6 @@ namespace WPB_11.Device
         private int BCDToDecimal(byte bcd)
         {
             return (bcd >> 4 & 0x0F) * 10 + (bcd & 0x0F);
-        }
-
-        private string ConvertBCDToDecimalString(byte[] bcdData)
-        {
-            StringBuilder decimalValue = new StringBuilder();
-
-            for (int i = 0; i < bcdData.Length; i++)
-            {
-                // Преобразуем каждый байт BCD в десятичное значение
-                decimalValue.Append(BCDToDecimal(bcdData[i]));
-
-                // Добавляем разделитель, если это не последний элемент
-                if (i < bcdData.Length - 1)
-                {
-                    decimalValue.Append(", "); // Используйте ", " или любой другой разделитель по вашему выбору
-                }
-            }
-
-            return decimalValue.ToString();
         }
 
     }
