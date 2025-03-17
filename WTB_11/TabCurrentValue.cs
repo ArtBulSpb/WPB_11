@@ -42,11 +42,11 @@ namespace WPB_11
 
             // Инициализация таймера
             _updateTimer = new System.Windows.Forms.Timer();
-            _updateTimer.Interval = 10000; // Обновление каждую секунду
+            _updateTimer.Interval = 1000; // Обновление каждую секунду
             _updateTimer.Tick += UpdateDeviceTime; // Подписка на событие
             _updateTimer.Start(); // Запуск таймера
+            Debug.WriteLine("запуск");
 
-           
 
             // Подписка на события
             devicePackets.DateTimeProcessed += HandleDateTimeProcessed;
@@ -318,7 +318,7 @@ namespace WPB_11
 
         private void HandleDateTimeProcessed(string message)
         {
-            //Debug.WriteLine("HandleDateTimeProcessed вызван"); 
+            Debug.WriteLine("HandleDateTimeProcessed вызван"); 
             if (deviceTime.InvokeRequired)
             {
                 deviceTime.Invoke(new Action<string>(HandleDateTimeProcessed), message);

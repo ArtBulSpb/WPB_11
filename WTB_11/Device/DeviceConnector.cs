@@ -6,6 +6,7 @@ using System.IO.Ports;
 using System.Threading;
 using System.Threading.Tasks;
 using WPB_11.DataStructures;
+using System.Diagnostics;
 
 namespace WPB_11.Device
 {
@@ -150,6 +151,7 @@ namespace WPB_11.Device
 
         public void Request(byte[] sendData)
         {
+            Debug.WriteLine("ProcessReceivedData");
             //OnDeviceConnected?.Invoke("Отправляю команду для получения даты и времени.");
             if (IsConnected)
             {
@@ -169,7 +171,7 @@ namespace WPB_11.Device
                     }
                     else
                     {
-                        // OnDeviceConnected?.Invoke("Ответ не получен.");
+                        Debug.WriteLine($"Ответ не получен");
                     }
                 }
                 catch (Exception ex)
@@ -183,6 +185,7 @@ namespace WPB_11.Device
 
         private void ProcessReceivedData(byte[] packetData)
         {
+            Debug.WriteLine("ProcessReceivedData");
             // Проверяем, что пакет содержит достаточно данных
             if (packetData.Length < 13)
             {
@@ -196,10 +199,11 @@ namespace WPB_11.Device
             switch (packetId)
             {
                 case 1: // пакет дата время температура
+                    Debug.WriteLine($"ProcessDateTimePacket");
                     _devicePackets.ProcessDateTimePacket(packetData);
                     break;
 
-                case 3: // пакет все про прибо и кран
+                case 3: // запрос текущих параметров
                     _devicePackets.ProcessVPBCurr(packetData);
                     break;
 

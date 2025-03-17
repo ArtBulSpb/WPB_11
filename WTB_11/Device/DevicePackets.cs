@@ -17,6 +17,7 @@ namespace WPB_11.Device
 
         public void ProcessDateTimePacket(byte[] packetData)
         {
+            Debug.WriteLine("ProcessDateTimePacket вызван");
             // Извлекаем дату и время, преобразуя BCD в десятичные значения
             DateTime VPBDateTime = VPBDateTimeToDateTime(
                 BCDToDecimal(packetData[9]),  // Год
@@ -32,6 +33,8 @@ namespace WPB_11.Device
 
         public void ProcessVPBCurr(byte[] packetData)
         {
+            Debug.WriteLine($"Обработка VPBCurr: {BitConverter.ToString(packetData)}"); // Отладочное сообщение
+
             // Проверяем CRC
             byte crc = 0;
             for (int i = 0; i < (packetData[2] * 256 + packetData[3] + 3); i++)
@@ -64,8 +67,11 @@ namespace WPB_11.Device
                 CurrPercent1 = packetData[25],
                 CurrPercent2 = packetData[26]
             };
+
+            Debug.WriteLine($"Данные датчиков: {sensorData}"); // Отладочное сообщение
             VPBCurrProcessed?.Invoke(sensorData);
         }
+
 
 
 
