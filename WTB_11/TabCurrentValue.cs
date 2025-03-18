@@ -38,7 +38,7 @@ namespace WPB_11
             contentPanel.Controls.Clear();
 
             devicePackets = new DevicePackets();
-            _deviceConnector = DeviceConnector.Instance("COM3", devicePackets);
+            _deviceConnector = DeviceConnector.Instance("COM3");
 
 
             // Создаем элементы управления
@@ -55,7 +55,7 @@ namespace WPB_11
 
             // Подписка на события
             devicePackets.DateTimeProcessed += HandleDateTimeProcessed;
-            devicePackets.VPBCurrProcessed += HandleVPBCurrProcessed;
+            
 
 
             CustomCheckedListBox customCheckedListBoxWinches = new CustomCheckedListBox("Список лебедок(1-8):")
@@ -315,7 +315,6 @@ namespace WPB_11
             if (DeviceConnector.Instance().IsConnected)
             {
                 DeviceConnector.Instance().Request(DeviceCommands.RequestDateTime);
-                DeviceConnector.Instance().Request(DeviceCommands.RequestTp);
 
             }
         }
@@ -351,36 +350,5 @@ namespace WPB_11
                 }
             }
         }
-
-        private void HandleVPBCurrProcessed(VPBCurrType.VPBCurrTypeStruct sensorData)
-        {
-            Debug.WriteLine("HandleSensorsCountProcessed вызван"); // Отладочное сообщение
-
-            if (sensorsCountField1.InvokeRequired)
-            {
-                sensorsCountField1.Invoke(new Action<VPBCurrType.VPBCurrTypeStruct>(HandleVPBCurrProcessed), sensorData);
-            }
-            else
-            {
-                // Проверяем, есть ли данные
-                if (sensorData.DTT.Year != 0) // Предположим, что 0 - это невалидное значение года
-                {
-                    // Обновляем текстовые поля на основе данных
-                    deviceTime.Text = $"{sensorData.DTT.Year}-{sensorData.DTT.Month}-{sensorData.DTT.Date} {sensorData.DTT.Hour}:{sensorData.DTT.Minute}:{sensorData.DTT.Second}";
-                    effortOnSensorsField1.Text = sensorData.CurrForce1.ToString();
-                    effortOnSensorsField2.Text = sensorData.CurrForce2.ToString();
-                    cargoMassField1.Text = $"{sensorData.CurrQ1} кг";
-                    cargoMassField2.Text = $"{sensorData.CurrQ2} кг";
-                    loadPercentageField1.Text = $"{sensorData.CurrPercent1}%";
-                    loadPercentageField2.Text = $"{sensorData.CurrPercent2}%";
-                }
-                else
-                {
-                    // Обработка случая, когда данные отсутствуют
-                    Debug.WriteLine("Нет данных для обновления интерфейса.");
-                }
-            }
-        }
-
     }
 }

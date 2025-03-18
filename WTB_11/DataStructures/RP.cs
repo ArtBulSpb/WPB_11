@@ -6,11 +6,11 @@ using System.Threading.Tasks;
 
 namespace WPB_11.DataStructures
 {
-    class RP
+    public class RP
     {
         public struct RPStruct
         {
-            public VPBCrane VPBCrane;
+            public VPBCrane.VPBCraneStruct VPBCrane;
             public VPBCurrType[] TPCHR; // Массив TPCHR
             public VPBCurrType[] TP; // Массив TP
         }

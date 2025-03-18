@@ -1,21 +1,49 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Forms;
+using WPB_11.DataStructures;
+using WPB_11.Device;
 using static System.Runtime.InteropServices.JavaScript.JSType;
 
 namespace WPB_11
 {
     class TabDevice
     {
+        private DeviceConnector _deviceConnector;
+        private DevicePackets devicePackets;
+
+        private TextBoxWithButton serialNumber;
+        private TextBoxWithButton windAveraging;
+        private TextBoxWithButton coeffField1;
+        private TextBoxWithButton additivField1;
+        private TextBoxWithButton integrationField1;
+        private TextBoxWithButton coeffField2;
+        private TextBoxWithButton additivField2;
+        private TextBoxWithButton integrationField2;
+        private DataGridView parametersGridView;
+
+        private System.Windows.Forms.Timer _updateTimer; // Таймер для периодического обновления
+
         public void ShowTabContent(Panel contentPanel, string[] TabNames)
         {
             contentPanel.Controls.Clear();
 
+            devicePackets = DevicePackets.Instance();
+            _deviceConnector = DeviceConnector.Instance("COM3");
+            // Инициализация таймера
+            _updateTimer = new System.Windows.Forms.Timer();
+            _updateTimer.Interval = 1000; // Обновление каждую секунду
+            _updateTimer.Tick += UpdateDeviceTime; // Подписка на событие
+            _updateTimer.Start(); // Запуск таймера
+
+            devicePackets.VPBCraneProcessed += HandleVPBCraneProcessed;
+
             // Создаем DataGridView для отображения параметров устройства
-            DataGridView parametersGridView = new DataGridView
+            parametersGridView = new DataGridView
             {
                 AutoSizeColumnsMode = DataGridViewAutoSizeColumnsMode.AllCells,
                 AutoSizeRowsMode = DataGridViewAutoSizeRowsMode.AllCells,
@@ -46,24 +74,24 @@ namespace WPB_11
             {
                 HeaderText = "Датчик (название)",
                 Name = "SensorName",
-                DataSource = new string[] { "Датчик 1", "Датчик 2", "Датчик 3" },
+                DataSource = new string[] { "Отключен", "Усилие. Лебедка 1", "Усилие. Лебедка 2", "Панель 1", "Панель 2" },
                 FlatStyle = FlatStyle.Flat
             });
             parametersGridView.Columns.Add(new DataGridViewComboBoxColumn
             {
                 HeaderText = "Запрос",
                 Name = "Request",
-                DataSource = new string[] { "Запрос 1", "Запрос 2", "Запрос 3" },
+                DataSource = new byte[] { 96, 225, 162, 48, 49 },
                 FlatStyle = FlatStyle.Flat
             });
             parametersGridView.Columns.Add("loadPercentage", "Значение 1");
             parametersGridView.Columns.Add("force", "Значение 2");
 
             // Пример данных для таблицы
-            for (int i = 1; i <= 4; i++)
+            /*for (int i = 1; i <= 8; i++)
             {
                 parametersGridView.Rows.Add(i, "Датчик 1", "Запрос 1", i + "%", i*i);
-            }
+            }*/
 
             ArrowButton emptyButton1 = new ArrowButton("G:\\VisualStudio\\repos\\WTB_11\\WTB_11\\Img\\saveEmpty.JPG", 50,200);
             ArrowButton emptyButton2 = new ArrowButton("G:\\VisualStudio\\repos\\WTB_11\\WTB_11\\Img\\saveEmpty.JPG", 50, 200);
@@ -71,8 +99,8 @@ namespace WPB_11
             ArrowButton cargoEmptyImg = new ArrowButton("G:\\VisualStudio\\repos\\WTB_11\\WTB_11\\Img\\cargoEmpty.JPG", 50, 200);
 
 
-            var serialNumber = new TextBoxWithButton("Зав №") { PlaceholderText = "52" };
-            var windAveraging = new TextBoxWithButton("Усреднение ветра") { PlaceholderText = "" };
+            serialNumber = new TextBoxWithButton("Зав №") { PlaceholderText = "" };
+            windAveraging = new TextBoxWithButton("Усреднение ветра") { PlaceholderText = "" };
             var labelSum = new Label()
             {
                 Text = "Ветер",
@@ -96,9 +124,9 @@ namespace WPB_11
                 BackColor = Color.Transparent, // Делаем фон метки прозрачным
                 Font = FontManager.GetSemiBoldFont(12),
             };
-            var coeffField1 = new TextBoxWithButton("Coeff") { PlaceholderText = "значение появляется при подключении прибора" };
-            var additivField1 = new TextBoxWithButton("Additiv") { PlaceholderText = "значение появляется при подключении прибора" };
-            var integrationField1 = new TextBoxWithButton("Интегрирование 1") { PlaceholderText = "значение появляется при подключении прибора" };
+            coeffField1 = new TextBoxWithButton("Coeff") { PlaceholderText = "значение появляется при подключении прибора" };
+            additivField1 = new TextBoxWithButton("Additiv") { PlaceholderText = "значение появляется при подключении прибора" };
+            integrationField1 = new TextBoxWithButton("Интегрирование 1") { PlaceholderText = "значение появляется при подключении прибора" };
             var maxQField1 = new TextBoxWithButton("MaxQ") { PlaceholderText = "значение появляется при подключении прибора" };
             var cargoMassField1 = new TextBoxWithButton("Масса груза:") { PlaceholderText = "значение появляется при подключении прибора" };
 
@@ -112,9 +140,9 @@ namespace WPB_11
                 BackColor = Color.Transparent, // Делаем фон метки прозрачным
                 Font = FontManager.GetSemiBoldFont(12),
             };
-            var coeffField2 = new TextBoxWithButton("Coeff") { PlaceholderText = "значение появляется при подключении прибора" };
-            var additivField2 = new TextBoxWithButton("Additiv") { PlaceholderText = "значение появляется при подключении прибора" };
-            var integrationField2 = new TextBoxWithButton("Интегрирование") { PlaceholderText = "значение появляется при подключении прибора" };
+            coeffField2 = new TextBoxWithButton("Coeff") { PlaceholderText = "значение появляется при подключении прибора" };
+            additivField2 = new TextBoxWithButton("Additiv") { PlaceholderText = "значение появляется при подключении прибора" };
+            integrationField2 = new TextBoxWithButton("Интегрирование") { PlaceholderText = "значение появляется при подключении прибора" };
             var maxQField2 = new TextBoxWithButton("MaxQ") { PlaceholderText = "значение появляется при подключении прибора" };
             var cargoMassField2 = new TextBoxWithButton("Масса груза:") { PlaceholderText = "значение появляется при подключении прибора" };
 
@@ -257,6 +285,82 @@ namespace WPB_11
             contentPanel.Controls.Add(layoutPanel); // Затем панель с текстовыми полями и таблицей
         }
 
+        private void UpdateDeviceTime(object sender, EventArgs e)
+        {
+            Debug.WriteLine("Пишу TabDevice");
+            if (DeviceConnector.Instance().IsConnected)
+            {
+                DeviceConnector.Instance().Request(DeviceCommands.RequestVPBCrane);
 
+            }
+        }
+
+        private void HandleVPBCraneProcessed(VPBCrane.VPBCraneStruct vpbcCrane)
+        {
+            Debug.WriteLine("HandleVPBCraneProcessed вызван"); // Отладочное сообщение
+
+            if (serialNumber.InvokeRequired)
+            {
+                serialNumber.Invoke(new Action<VPBCrane.VPBCraneStruct>(HandleVPBCraneProcessed), vpbcCrane);
+            }
+            else
+            {
+                // Проверяем, есть ли данные
+                if (vpbcCrane.VPBNumber != null) 
+                {
+                    // Обновляем текстовые поля на основе данных
+                    serialNumber.Text = new string(vpbcCrane.VPBNumber);
+                    coeffField1.Text = vpbcCrane.CoeffQ1.ToString();
+                    additivField1.Text = vpbcCrane.AdditivQ1.ToString();
+                    integrationField1.Text = vpbcCrane.Integral1.ToString();
+                    coeffField2.Text = vpbcCrane.CoeffQ2.ToString();
+                    additivField2.Text = vpbcCrane.AdditivQ2.ToString();
+                    integrationField2.Text = vpbcCrane.Integral2.ToString();
+
+                    UpdateParametersGridView(vpbcCrane.Sensors);
+                }
+                else
+                {
+                    // Обработка случая, когда данные отсутствуют
+                    Debug.WriteLine("Нет данных для обновления интерфейса device");
+                }
+            }
+        }
+
+        private void UpdateParametersGridView(VPBSensors.VPBSensorsStruct[] sensors)
+        {
+            parametersGridView.Rows.Clear();
+
+            for (int i = 0; i < sensors.Length; i++)
+            {
+                var sensor = sensors[i];
+
+                // Получаем название сенсора из словаря
+                string sensorName = sensorTypes.ContainsKey(sensor.SensorType)
+                    ? sensorTypes[sensor.SensorType]
+                    : "Неизвестный тип"; // Обработка случая, если тип не найден
+
+                Debug.WriteLine($"Попытка добавить данные для датчика {i + 1}: " +
+                                $"SensorType: {sensorName.GetType()}, Query: {sensor.Query.GetType()}, " +
+                                $"Data0Low: {sensor.Data0Low}, Data0High: {sensor.Data0High}");
+
+                parametersGridView.Rows.Add(
+                    i + 1,
+                    sensorName, // Используем название сенсора
+                    sensor.Query,
+                    sensor.Data0Low + sensor.Data0High * 256
+                );
+            }
+        }
+
+
+        private Dictionary<byte, string> sensorTypes = new Dictionary<byte, string>
+        {
+            { 0, "Отключен" },
+            { 1, "Усилие. Лебедка 1" },
+            { 2, "Усилие. Лебедка 2" },
+            { 3, "Панель 1" },
+            { 4, "Панель 2" }
+        };
     }
 }

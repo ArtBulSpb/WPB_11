@@ -33,11 +33,11 @@ namespace WPB_11.Device
             };
         }
 
-        public static DeviceConnector Instance(string portName = "COM3", DevicePackets devicePackets = null)
+        public static DeviceConnector Instance(string portName = "COM3")
         {
             if (_instance == null)
             {
-                _instance = new DeviceConnector(portName, devicePackets);
+                _instance = new DeviceConnector(portName, DevicePackets.Instance());
             }
             return _instance;
         }
@@ -203,8 +203,9 @@ namespace WPB_11.Device
                     _devicePackets.ProcessDateTimePacket(packetData);
                     break;
 
-                case 3: // запрос текущих параметров
-                    //_devicePackets.ProcessVPBCurr(packetData);
+                case 3: // запрос прибор/кран
+                    Debug.WriteLine($"ProcessVPBCrane");
+                    _devicePackets.ProcessVPBCrane(packetData);
                     break;
 
                 default:

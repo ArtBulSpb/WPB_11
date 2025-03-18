@@ -7,18 +7,18 @@ using System.Threading.Tasks;
 
 namespace WPB_11.DataStructures
 {
-    class VPBCrane
+    public class VPBCrane
     {
         public struct VPBCraneStruct
         {
-            [MarshalAs(UnmanagedType.ByValTStr, SizeConst = 11)]
-            public string Crane; // Название крана
+            [MarshalAs(UnmanagedType.ByValArray, SizeConst = 11)]
+            public char[] Crane; // Название крана
 
-            [MarshalAs(UnmanagedType.ByValTStr, SizeConst = 11)]
-            public string VPBNumber; // Номер прибора
+            [MarshalAs(UnmanagedType.ByValArray, SizeConst = 11)]
+            public char[] VPBNumber; // Номер прибора
 
-            [MarshalAs(UnmanagedType.ByValTStr, SizeConst = 11)]
-            public string CraneNumber; // Номер крана
+            [MarshalAs(UnmanagedType.ByValArray, SizeConst = 11)]
+            public char[] CraneNumber; // Номер крана
 
             public byte[] SetupDate; // Дата настройки (3 байта)
             public byte ProgramVersion; // Версия ПО
@@ -41,7 +41,7 @@ namespace WPB_11.DataStructures
             public short AdditivQ2; // Добавка для массы 2
             public byte Integral1; // Интегральная скорость 1
             public byte Integral2; // Интегральная скорость 2
-            public VPBSensors[] Sensors; // Датчики
+            public VPBSensors.VPBSensorsStruct[] Sensors; // Датчики
         }
 
     }

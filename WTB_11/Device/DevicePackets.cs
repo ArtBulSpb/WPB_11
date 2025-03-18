@@ -2,19 +2,30 @@
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
+using System.Net.Http.Headers;
 using System.Net.Sockets;
 using System.Text;
 using System.Threading.Tasks;
 using WPB_11.DataStructures;
+using static WPB_11.DataStructures.RP;
+using static WPB_11.DataStructures.VPBCrane;
 
 namespace WPB_11.Device
 {
     public class DevicePackets
     {
-
+        private static DevicePackets _instance;
         public event Action<VPBCurrType.VPBCurrTypeStruct> DateTimeProcessed;
-        public event Action<VPBCurrType.VPBCurrTypeStruct> VPBCurrProcessed;
+        public event Action<VPBCrane.VPBCraneStruct> VPBCraneProcessed;
 
+        public static DevicePackets Instance()
+        {
+            if (_instance == null)
+            {
+                _instance = new DevicePackets();
+            }
+            return _instance;
+        }
 
         public void ProcessDateTimePacket(byte[] packetData)
         {
@@ -81,40 +92,137 @@ namespace WPB_11.Device
         }
 
 
-        private DateTime VPBDateTimeToDateTime(int year, int month, int date, int hour, int minute, int second)
+        public void ProcessVPBCrane(byte[] packetData)
         {
-            int fullYear = 2000 + year; // Предполагаем, что год начинается с 2000
+            Debug.WriteLine($"Начало обработки данных VPBCrane {BitConverter.ToString(packetData)}");
 
-            // Проверка на допустимость значений
-            if (month < 1 || month > 12)
-            {
-                throw new ArgumentOutOfRangeException(nameof(month), $"Месяц должен быть в диапазоне от 1 до 12. {year} {month} {date}");
-            }
+            // Краны
+            RP.RPStruct rp = new RP.RPStruct();
+            rp.VPBCrane = new VPBCrane.VPBCraneStruct();
+            rp.VPBCrane.Crane = new char[11];
+            rp.VPBCrane.VPBNumber = new char[11];
+            rp.VPBCrane.CraneNumber = new char[11];
+            rp.VPBCrane.SetupDate = new byte[3];
+            rp.VPBCrane.Sensors = new VPBSensors.VPBSensorsStruct[8];
+            rp.VPBCrane.Cycles1 = new uint[15];
+            rp.VPBCrane.Cycles2 = new uint[15];
 
-            // Проверка на количество дней в месяце
-            int daysInMonth = DateTime.DaysInMonth(fullYear, month);
-            if (date < 1 || date > daysInMonth)
+            // Название крана
+            for (int i = 0; i < 11; i++)
             {
-                throw new ArgumentOutOfRangeException(nameof(date), $"День должен быть в диапазоне от 1 до {daysInMonth} для месяца {month}.");
-            }
-
-            // Проверка на допустимость времени
-            if (hour < 0 || hour > 23)
-            {
-                throw new ArgumentOutOfRangeException(nameof(hour), "Час должен быть в диапазоне от 0 до 23.");
-            }
-            if (minute < 0 || minute > 59)
-            {
-                throw new ArgumentOutOfRangeException(nameof(minute), "Минуты должны быть в диапазоне от 0 до 59.");
-            }
-            if (second < 0 || second > 59)
-            {
-                throw new ArgumentOutOfRangeException(nameof(second), "Секунды должны быть в диапазоне от 0 до 59.");
+                rp.VPBCrane.Crane[i] = (char)packetData[i + 5];
             }
 
-            //OnDeviceConnected?.Invoke($"Полученные данные: Год={fullYear}, Месяц={month}, День={date}, Час={hour}, Минуты={minute}, Секунды={second}");
-            return new DateTime(fullYear, month, date, hour, minute, second);
+            // Минимальный идентификатор
+            for (int i = 0; i < 11; i++)
+            {
+                rp.VPBCrane.VPBNumber[i] = (char)packetData[i + 16];
+            }
+
+            // Номер крана
+            for (int i = 0; i < 11; i++)
+            {
+                rp.VPBCrane.CraneNumber[i] = (char)packetData[i + 27];
+            }
+
+            // Дата настройки
+            for (int i = 0; i < 3; i++)
+            {
+                rp.VPBCrane.SetupDate[i] = packetData[38 + i];
+            }
+
+            // Версия программы
+            rp.VPBCrane.ProgramVersion = packetData[41];
+
+            // Группа нагрузки
+            rp.VPBCrane.LoadGroup = packetData[42];
+
+            // Максимальная скорость
+            rp.VPBCrane.MaxV = packetData[43];
+
+            // Интегральная скорость
+            rp.VPBCrane.IntegralV = packetData[44];
+
+            // TPCHRPoint
+            try
+            {
+                rp.VPBCrane.TpchrPoint = (uint)(packetData[45] +
+                                                 packetData[46] * 256 +
+                                                 packetData[47] * 65536 +
+                                                 packetData[48] * 16777216);
+            }
+            catch { }
+
+            // Циклы 1
+            uint SummCycles1 = 0;
+            for (int j = 0; j < 15; j++)
+            {
+                rp.VPBCrane.Cycles1[j] = BitConverter.ToUInt32(packetData, 49 + j * 4);
+                SummCycles1 += rp.VPBCrane.Cycles1[j];
+            }
+
+            // Циклы 2
+            uint SummCycles2 = 0;
+            for (int j = 0; j < 15; j++)
+            {
+                rp.VPBCrane.Cycles2[j] = BitConverter.ToUInt32(packetData, 109 + j * 4);
+                SummCycles2 += rp.VPBCrane.Cycles2[j];
+            }
+
+            // Характеристики
+            rp.VPBCrane.CharacteristicNumber1 = BitConverter.ToSingle(packetData, 169);
+            rp.VPBCrane.CharacteristicNumber2 = BitConverter.ToSingle(packetData, 173);
+
+            // SummQ1
+            rp.VPBCrane.SummQ1 = BitConverter.ToUInt32(packetData, 177);
+
+            // SummQ2
+            rp.VPBCrane.SummQ2 = BitConverter.ToUInt32(packetData, 181);
+
+            // Время работы
+            rp.VPBCrane.OperatingTime = BitConverter.ToUInt32(packetData, 185);
+
+            // Qmax1
+            rp.VPBCrane.MaxQ1 = BitConverter.ToUInt32(packetData, 189);
+
+            // Qmax2
+            rp.VPBCrane.MaxQ2 = BitConverter.ToUInt32(packetData, 193);
+
+            // Coeff1
+            rp.VPBCrane.CoeffQ1 = (short)((packetData[197] << 8) + packetData[196]);
+
+            // Additiv1
+            rp.VPBCrane.AdditivQ1 = (short)((packetData[199] << 8) + packetData[198]);
+
+            // Coeff2
+            rp.VPBCrane.CoeffQ2 = (short)((packetData[201] << 8) + packetData[200]);
+            // Additiv2
+            rp.VPBCrane.AdditivQ2 = (short)((packetData[203] << 8) + packetData[202]);
+
+            // Интегральная характеристика 1
+            rp.VPBCrane.Integral1 = packetData[204];
+
+            // Интегральная характеристика 2
+            rp.VPBCrane.Integral2 = packetData[205];
+
+            // Датчики
+            for (int i = 0; i < 8; i++)
+            {
+                int baseIndex = 206 + i * 7;
+                rp.VPBCrane.Sensors[i].Query = packetData[baseIndex];
+                rp.VPBCrane.Sensors[i].SensorType = packetData[baseIndex + 1];
+                rp.VPBCrane.Sensors[i].SensorAnswer = Convert.ToBoolean(packetData[baseIndex + 2]);
+                rp.VPBCrane.Sensors[i].Data0Low = packetData[baseIndex + 3];
+                rp.VPBCrane.Sensors[i].Data0High = packetData[baseIndex + 4];
+                rp.VPBCrane.Sensors[i].Data1Low = packetData[baseIndex + 5];
+                rp.VPBCrane.Sensors[i].Data1High = packetData[baseIndex + 6];
+            }
+
+            Debug.WriteLine("Событие VPBCraneProcessed вызывается");
+            VPBCraneProcessed?.Invoke(rp.VPBCrane);
         }
+
+
 
 
         private int BCDToDecimal(byte bcd)
