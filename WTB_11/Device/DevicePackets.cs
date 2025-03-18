@@ -138,10 +138,10 @@ namespace WPB_11.Device
             rp.VPBCrane.LoadGroup = packetData[42];
 
             // Максимальная скорость
-            rp.VPBCrane.MaxV = packetData[43];
+            rp.VPBCrane.MaxV = packetData[42];
 
             // Интегральная скорость
-            rp.VPBCrane.IntegralV = packetData[44];
+            rp.VPBCrane.IntegralV = packetData[43];
 
             // TPCHRPoint
             try

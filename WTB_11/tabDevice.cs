@@ -25,6 +25,7 @@ namespace WPB_11
         private TextBoxWithButton additivField2;
         private TextBoxWithButton integrationField2;
         private DataGridView parametersGridView;
+        private TextBoxWithButton windSpeedCoefficient;
 
         private System.Windows.Forms.Timer _updateTimer; // Таймер для периодического обновления
 
@@ -87,11 +88,6 @@ namespace WPB_11
             parametersGridView.Columns.Add("loadPercentage", "Значение 1");
             parametersGridView.Columns.Add("force", "Значение 2");
 
-            // Пример данных для таблицы
-            /*for (int i = 1; i <= 8; i++)
-            {
-                parametersGridView.Rows.Add(i, "Датчик 1", "Запрос 1", i + "%", i*i);
-            }*/
 
             ArrowButton emptyButton1 = new ArrowButton("G:\\VisualStudio\\repos\\WTB_11\\WTB_11\\Img\\saveEmpty.JPG", 50,200);
             ArrowButton emptyButton2 = new ArrowButton("G:\\VisualStudio\\repos\\WTB_11\\WTB_11\\Img\\saveEmpty.JPG", 50, 200);
@@ -112,7 +108,7 @@ namespace WPB_11
             };
             var totalEffort = new TextBoxWithButton("Суммарное усилие") { PlaceholderText = "" };
             var cargoMassField = new TextBoxWithButton("Текущая масса груза") { PlaceholderText = "" };
-            var windSpeedCoefficient = new TextBoxWithButton("Коэфф. скорости ветра") { PlaceholderText = "Скорость ветра (коэфф.)" };
+            windSpeedCoefficient = new TextBoxWithButton("Коэфф. скорости ветра") { PlaceholderText = "Скорость ветра (коэфф.)" };
 
             //Лебедка 1
             var label1 = new Label()
@@ -316,6 +312,9 @@ namespace WPB_11
                     coeffField2.Text = vpbcCrane.CoeffQ2.ToString();
                     additivField2.Text = vpbcCrane.AdditivQ2.ToString();
                     integrationField2.Text = vpbcCrane.Integral2.ToString();
+                    windSpeedCoefficient.Text = vpbcCrane.MaxV.ToString();
+                    windAveraging.Text = vpbcCrane.IntegralV.ToString();
+
 
                     UpdateParametersGridView(vpbcCrane.Sensors);
                 }
