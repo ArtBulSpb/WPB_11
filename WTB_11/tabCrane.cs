@@ -1,24 +1,49 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using System.Runtime.CompilerServices;
 using System.Text;
 using System.Threading.Tasks;
+using WPB_11.DataStructures;
+using WPB_11.Device;
 
 namespace WPB_11
 {
     class tabCrane
     {
+        private DeviceConnector _deviceConnector;
+        private DevicePackets devicePackets;
+
+        private TextBoxWithButton craneInfoMark;
+        private TextBoxWithButton craneInfoNumber;
+        private TextBoxWithButton permissibleWindSpeed;
+        private CustomCheckedListBox loadingMode;
+        private TextBoxWithButton maxQField1;
+        private TextBoxWithButton maxQField2;
+
+        private System.Windows.Forms.Timer _updateTimer;
+
         public void ShowTabContent(Panel contentPanel, string[] TabNames)
         {
             contentPanel.Controls.Clear();
 
-            
-            var craneInfoMark = new TextBoxWithButton("Техника") { PlaceholderText = "Марка \n Модель" };
-            var craneInfoNumber = new TextBoxWithButton("Зав. номер") { PlaceholderText = "значение появляется при подключении прибора" };
-            var permissibleWindSpeed = new TextBoxWithButton("Допустимая скор. ветра") { PlaceholderText = "значение появляется при подключении прибора" };
+            devicePackets = DevicePackets.Instance();
+            _deviceConnector = DeviceConnector.Instance("COM3");
+            // Инициализация таймера
+            _updateTimer = new System.Windows.Forms.Timer();
+            _updateTimer.Interval = 1000; // Обновление каждую секунду
+            _updateTimer.Tick += UpdateDeviceTime; // Подписка на событие
+            _updateTimer.Start(); // Запуск таймера
 
-            var loadingMode = new CustomCheckedListBox("Режим нагружения") { Margin = new Padding(25, 0, 25, 0) };
+            devicePackets.VPBCraneProcessed += HandleVPBCraneProcessed;
+
+
+            craneInfoMark = new TextBoxWithButton("Техника") { PlaceholderText = "Марка \n Модель" };
+            craneInfoNumber = new TextBoxWithButton("Зав. номер") { PlaceholderText = "значение появляется при подключении прибора" };
+            permissibleWindSpeed = new TextBoxWithButton("Допустимая скор. ветра") { PlaceholderText = "значение появляется при подключении прибора" };
+
+            loadingMode = new CustomCheckedListBox("Режим нагружения") { Margin = new Padding(25, 0, 25, 0) };
             for(int i =0; i <= 8; i++)
             {
                 loadingMode.AddItem("Режим нагружения " + i);
@@ -34,7 +59,7 @@ namespace WPB_11
                 BackColor = Color.Transparent, // Делаем фон метки прозрачным
                 Font = FontManager.GetSemiBoldFont(12),
             };
-            var maxQField1 = new TextBoxWithButton("MaxQ") { PlaceholderText = "значение появляется при подключении прибора" };
+            maxQField1 = new TextBoxWithButton("MaxQ") { PlaceholderText = "значение появляется при подключении прибора" };
 
             //Лебедка 2
             var label2 = new Label()
@@ -46,7 +71,7 @@ namespace WPB_11
                 BackColor = Color.Transparent, // Делаем фон метки прозрачным
                 Font = FontManager.GetSemiBoldFont(12),
             };
-            var maxQField2 = new TextBoxWithButton("MaxQ") { PlaceholderText = "значение появляется при подключении прибора" };
+            maxQField2 = new TextBoxWithButton("MaxQ") { PlaceholderText = "значение появляется при подключении прибора" };
 
             //Лебедка 3
             var label3 = new Label()
@@ -145,6 +170,44 @@ namespace WPB_11
             layoutPanel.ColumnStyles.Add(new ColumnStyle(SizeType.AutoSize));
 
             layoutPanel.RowStyles.Add(new RowStyle(SizeType.Absolute, 140)); // Для первого текстового поля
+        }
+
+        private void UpdateDeviceTime(object sender, EventArgs e)
+        {
+            Debug.WriteLine("Пишу TabCrane");
+            if (DeviceConnector.Instance().IsConnected)
+            {
+                DeviceConnector.Instance().Request(DeviceCommands.RequestVPBCrane);
+
+            }
+        }
+
+        private void HandleVPBCraneProcessed(VPBCrane.VPBCraneStruct vpbcCrane)
+        {
+            Debug.WriteLine("HandleVPBCraneProcessed tabCrane вызван"); // Отладочное сообщение
+            if (craneInfoMark.InvokeRequired)
+            {
+                craneInfoMark.Invoke(new Action<VPBCrane.VPBCraneStruct>(HandleVPBCraneProcessed), vpbcCrane);
+            }
+            else
+            {
+                // Проверяем, есть ли данные
+                if (vpbcCrane.VPBNumber != null)
+                {
+                    // Обновляем текстовые поля на основе данных
+                    craneInfoMark.Text = vpbcCrane.Crane.ToString();
+                    craneInfoNumber.Text = new string(vpbcCrane.CraneNumber);
+                    permissibleWindSpeed.Text = vpbcCrane.MaxV.ToString();
+                    loadingMode.Text = vpbcCrane.LoadGroup.ToString();
+                    maxQField1.Text = vpbcCrane.MaxQ1.ToString();
+                    maxQField2.Text = vpbcCrane.MaxQ2.ToString();
+                }
+                else
+                {
+                    // Обработка случая, когда данные отсутствуют
+                    Debug.WriteLine("Нет данных для обновления интерфейса device");
+                }
+            }
         }
     }
 }

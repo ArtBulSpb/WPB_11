@@ -12,7 +12,7 @@ namespace WPB_11.DataStructures
         public struct VPBCraneStruct
         {
             [MarshalAs(UnmanagedType.ByValArray, SizeConst = 11)]
-            public char[] Crane; // Название крана
+            public byte[] Crane; // Название крана
 
             [MarshalAs(UnmanagedType.ByValArray, SizeConst = 11)]
             public char[] VPBNumber; // Номер прибора

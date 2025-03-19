@@ -6,7 +6,9 @@ using System.Net.Http.Headers;
 using System.Net.Sockets;
 using System.Text;
 using System.Threading.Tasks;
+using System.Xml.Linq;
 using WPB_11.DataStructures;
+using static System.Net.Mime.MediaTypeNames;
 using static WPB_11.DataStructures.RP;
 using static WPB_11.DataStructures.VPBCrane;
 
@@ -48,7 +50,7 @@ namespace WPB_11.Device
                 CurrQ2 = BitConverter.ToInt32(packetData, 20),
                 CurrPercent1 = packetData[24],
                 CurrPercent2 = packetData[25],
-                
+
             };
             // Вычисление суммарного усилия с обработкой переполнения
             if (sensorData.CurrForce1 != 0 && sensorData.CurrForce1 != 0)
@@ -65,9 +67,9 @@ namespace WPB_11.Device
             sensorData.Errors = value.ToString();
 
             // Добавляем температуру
-            string value1 = packetData[10].ToString(); 
+            string value1 = packetData[10].ToString();
             float value2 = ((float)(packetData[11] >> 6) * 25);
-            sensorData.Temperature = $"{value1},{value2}"; 
+            sensorData.Temperature = $"{value1},{value2}";
 
             // Добавляем силу ветра
             sensorData.WindForce = (byte)(packetData[26] / 10); // Сила ветра
@@ -99,7 +101,7 @@ namespace WPB_11.Device
             // Краны
             RP.RPStruct rp = new RP.RPStruct();
             rp.VPBCrane = new VPBCrane.VPBCraneStruct();
-            rp.VPBCrane.Crane = new char[11];
+            rp.VPBCrane.Crane = new byte[11];
             rp.VPBCrane.VPBNumber = new char[11];
             rp.VPBCrane.CraneNumber = new char[11];
             rp.VPBCrane.SetupDate = new byte[3];
@@ -107,11 +109,17 @@ namespace WPB_11.Device
             rp.VPBCrane.Cycles1 = new uint[15];
             rp.VPBCrane.Cycles2 = new uint[15];
 
-            // Название крана
+            // Название крана в 16 ричной 1251, нужно превратить в десятичную а потом в utf
             for (int i = 0; i < 11; i++)
             {
-                rp.VPBCrane.Crane[i] = (char)packetData[i + 5];
+                rp.VPBCrane.Crane[i] = packetData[i + 4];
+               
             }
+            //int[] decodedCraneName = ConvertHexToDecimal(rp.VPBCrane.Crane);
+            //string result = ConvertIntsToString(decodedCraneName);
+
+            //Debug.WriteLine(result + " Название крана" + string.Join(", ", decodedCraneName));
+
 
             // Минимальный идентификатор
             for (int i = 0; i < 11; i++)
@@ -122,7 +130,7 @@ namespace WPB_11.Device
             // Номер крана
             for (int i = 0; i < 11; i++)
             {
-                rp.VPBCrane.CraneNumber[i] = (char)packetData[i + 27];
+                rp.VPBCrane.CraneNumber[i] = (char)packetData[i + 26];
             }
 
             // Дата настройки
@@ -183,10 +191,10 @@ namespace WPB_11.Device
             rp.VPBCrane.OperatingTime = BitConverter.ToUInt32(packetData, 185);
 
             // Qmax1
-            rp.VPBCrane.MaxQ1 = BitConverter.ToUInt32(packetData, 189);
+            rp.VPBCrane.MaxQ1 = BitConverter.ToUInt32(packetData, 188);
 
             // Qmax2
-            rp.VPBCrane.MaxQ2 = BitConverter.ToUInt32(packetData, 193);
+            rp.VPBCrane.MaxQ2 = BitConverter.ToUInt32(packetData, 192);
 
             // Coeff1
             rp.VPBCrane.CoeffQ1 = (short)((packetData[197] << 8) + packetData[196]);
@@ -230,5 +238,30 @@ namespace WPB_11.Device
             return (bcd >> 4 & 0x0F) * 10 + (bcd & 0x0F);
         }
 
+        public static int[] ConvertHexToDecimal(byte[] hexBytes)
+        {
+            int[] decimalBytes = new int[hexBytes.Length];
+
+            for (int i = 0; i < hexBytes.Length; i++)
+            {
+                decimalBytes[i] = Convert.ToInt32(hexBytes[i]); // Преобразуем каждый байт в десятичный
+            }
+
+            return decimalBytes;
+        }
+        public static string ConvertIntsToString(int[] intArray)
+        {
+            // Конвертируем массив целых чисел в массив байтов
+            byte[] byteArray = Array.ConvertAll(intArray, n => (byte)n);
+
+            // Преобразуем байты в строку с использованием кодировки Windows-1251
+            string windows1251String = Encoding.GetEncoding(1251).GetString(byteArray);
+
+            // Преобразуем строку в массив байтов в кодировке UTF-16
+            byte[] utf16Bytes = Encoding.Unicode.GetBytes(windows1251String);
+
+            // Преобразуем обратно в строку для вывода
+            return Encoding.Unicode.GetString(utf16Bytes);
+        }
     }
 }
