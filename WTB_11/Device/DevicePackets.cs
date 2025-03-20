@@ -109,17 +109,6 @@ namespace WPB_11.Device
             rp.VPBCrane.Cycles1 = new uint[15];
             rp.VPBCrane.Cycles2 = new uint[15];
 
-            // Название крана в 16 ричной 1251, нужно превратить в десятичную а потом в utf
-            for (int i = 0; i < 11; i++)
-            {
-                rp.VPBCrane.Crane[i] = packetData[i + 4];
-               
-            }
-            //int[] decodedCraneName = ConvertHexToDecimal(rp.VPBCrane.Crane);
-            //string result = ConvertIntsToString(decodedCraneName);
-
-            //Debug.WriteLine(result + " Название крана" + string.Join(", ", decodedCraneName));
-
 
             // Минимальный идентификатор
             for (int i = 0; i < 11; i++)
@@ -238,17 +227,16 @@ namespace WPB_11.Device
             return (bcd >> 4 & 0x0F) * 10 + (bcd & 0x0F);
         }
 
-        public static int[] ConvertHexToDecimal(byte[] hexBytes)
+        /*public static byte[] ConvertHexToDecimal(byte[] hexBytes)
         {
-            int[] decimalBytes = new int[hexBytes.Length];
-
-            for (int i = 0; i < hexBytes.Length; i++)
+            int numberChars = hexBytes.Length;
+            byte[] bytes = new byte[numberChars / 2];
+            for (int i = 0; i < numberChars; i += 2)
             {
-                decimalBytes[i] = Convert.ToInt32(hexBytes[i]); // Преобразуем каждый байт в десятичный
+                bytes[i / 2] = Convert.ToByte(hexBytes.Substring(i, 2), 16);
             }
-
-            return decimalBytes;
-        }
+            return bytes;
+        }*/
         public static string ConvertIntsToString(int[] intArray)
         {
             // Конвертируем массив целых чисел в массив байтов

@@ -194,8 +194,9 @@ namespace WPB_11
                 // Проверяем, есть ли данные
                 if (vpbcCrane.VPBNumber != null)
                 {
+                    Win1251ToCorrectText str = new Win1251ToCorrectText();
                     // Обновляем текстовые поля на основе данных
-                    craneInfoMark.Text = vpbcCrane.Crane.ToString();
+                    craneInfoMark.Text = "Название " + str.GetNormalText(vpbcCrane.Crane);
                     craneInfoNumber.Text = new string(vpbcCrane.CraneNumber);
                     permissibleWindSpeed.Text = vpbcCrane.MaxV.ToString();
                     loadingMode.Text = vpbcCrane.LoadGroup.ToString();
