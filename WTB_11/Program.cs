@@ -11,6 +11,9 @@ public class MainForm : Form
         this.BackColor = Color.White; // Цвет формы
         this.Icon = new Icon("G:\\VisualStudio\\repos\\WTB_11\\WTB_11\\Img\\VPBW_Icon.ico");
         this.Text = "ВПБ-А";
+        this.ClientSize = new Size(1350, 800); // Установите нужные размеры
+        this.FormBorderStyle = FormBorderStyle.FixedSingle; // Запрещаем изменение размера
+        this.MaximizeBox = false;
         string[] tabNames = {
             "Текущие значения",
             "Параметры прибора",
@@ -20,7 +23,7 @@ public class MainForm : Form
             "Перегрузки",
             "Настройка",
             "Дополнительно",
-        };
+        }; 
 
         tabControl1 customTabControl = new tabControl1(tabNames)
         {

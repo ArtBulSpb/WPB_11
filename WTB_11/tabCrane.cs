@@ -15,8 +15,8 @@ namespace WPB_11
         private DeviceConnector _deviceConnector;
         private DevicePackets devicePackets;
 
-        private TextBoxWithButton craneInfoMark;
-        private TextBoxWithButton craneInfoNumber;
+        public TextBoxWithButton craneInfoMark;
+        public TextBoxWithButton craneInfoNumber;
         private TextBoxWithButton permissibleWindSpeed;
         private CustomCheckedListBox loadingMode;
         private TextBoxWithButton maxQField1;
@@ -37,6 +37,8 @@ namespace WPB_11
             _updateTimer.Start(); // Запуск таймера
 
             devicePackets.VPBCraneProcessed += HandleVPBCraneProcessed;
+            
+
 
 
             craneInfoMark = new TextBoxWithButton("Техника") { PlaceholderText = "Марка \n Модель" };
@@ -84,6 +86,12 @@ namespace WPB_11
                 Font = FontManager.GetSemiBoldFont(12),
             };
             var maxQField3 = new TextBoxWithButton("MaxQ") { PlaceholderText = "значение появляется при подключении прибора" };
+
+            craneInfoMark.ButtonClick += CraneInfoMark_ButtonClick;
+            craneInfoNumber.ButtonClick += craneInfoNumber_ButtonClick;
+            permissibleWindSpeed.ButtonClick += permissibleWindSpeed_ButtonClick;
+            maxQField1.ButtonClick += maxQField1_ButtonClick;
+            maxQField2.ButtonClick += maxQField2_ButtonClick;
 
             TableLayoutPanel layoutPanel = new TableLayoutPanel
             {
@@ -196,7 +204,7 @@ namespace WPB_11
                 {
                     Win1251ToCorrectText str = new Win1251ToCorrectText();
                     // Обновляем текстовые поля на основе данных
-                    craneInfoMark.Text = "Название " + str.GetNormalText(vpbcCrane.Crane);
+                    craneInfoMark.Text = str.GetNormalText(vpbcCrane.Crane);
                     craneInfoNumber.Text = new string(vpbcCrane.CraneNumber);
                     permissibleWindSpeed.Text = vpbcCrane.MaxV.ToString();
                     loadingMode.Text = vpbcCrane.LoadGroup.ToString();
@@ -208,6 +216,54 @@ namespace WPB_11
                     // Обработка случая, когда данные отсутствуют
                     Debug.WriteLine("Нет данных для обновления интерфейса device");
                 }
+            }
+        }
+
+        private void CraneInfoMark_ButtonClick(object sender, EventArgs e)
+        {
+            Debug.WriteLine("Пишу CraneInfoMark_ButtonClick");
+            if (DeviceConnector.Instance().IsConnected)
+            {
+                tabCrane tabC = this;
+                DeviceConnector.Instance().Request(DeviceCommands.CreateSetCraneMark(tabC));
+
+            }
+        }
+
+        private void craneInfoNumber_ButtonClick(object sender, EventArgs e)
+        {
+            Debug.WriteLine("Пишу craneInfoNumber_ButtonClick");
+            if (DeviceConnector.Instance().IsConnected)
+            {
+                //DeviceConnector.Instance().Request(DeviceCommands.SetCraneNumber);
+
+            }
+        }
+        private void permissibleWindSpeed_ButtonClick(object sender, EventArgs e)
+        {
+            Debug.WriteLine("Пишу permissibleWindSpeed_ButtonClick");
+            if (DeviceConnector.Instance().IsConnected)
+            {
+                //DeviceConnector.Instance().Request(DeviceCommands.SetCraneMark);
+
+            }
+        }
+        private void maxQField1_ButtonClick(object sender, EventArgs e)
+        {
+            Debug.WriteLine("Пишу maxQField1_ButtonClick");
+            if (DeviceConnector.Instance().IsConnected)
+            {
+                //DeviceConnector.Instance().Request(DeviceCommands.SetCraneMark);
+
+            }
+        }
+        private void maxQField2_ButtonClick(object sender, EventArgs e)
+        {
+            Debug.WriteLine("Пишу maxQField2_ButtonClick");
+            if (DeviceConnector.Instance().IsConnected)
+            {
+                //DeviceConnector.Instance().Request(DeviceCommands.SetCraneMark);
+
             }
         }
     }
