@@ -48,13 +48,21 @@ namespace WPB_11
             comboBox.Items.Add(itemText);
         }
 
+        // Метод для установки выбранного элемента по умолчанию
+        public void SelectDefaultItem()
+        {
+            if (comboBox.Items.Count > 0)
+            {
+                comboBox.SelectedIndex = 0; // Выбираем первый элемент
+            }
+        }
+
         // Метод для получения выбранного элемента
         public string SelectedItem
         {
             get { return comboBox.SelectedItem?.ToString(); }
         }
     }
-
 }
 
 

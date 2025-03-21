@@ -1,9 +1,12 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using System.Numerics;
 using System.Text;
 using System.Threading.Tasks;
+using WPB_11.DataStructures;
+using WPB_11.Device;
 using static System.Runtime.InteropServices.JavaScript.JSType;
 using static System.Windows.Forms.VisualStyles.VisualStyleElement.TextBox;
 
@@ -11,21 +14,48 @@ namespace WPB_11
 {
     class TabLongInform
     {
+        private DeviceConnector _deviceConnector;
+        private DevicePackets devicePackets;
+
+        private DoubleLabel craneTime;
+        private CustomCheckedListBox winchesList;
+        private TextBoxWithButton totalNumberCycles;
+        private TextBoxWithButton characteristicNumber;
+        private TextBoxWithButton totalCargoWeight;
+        private TextBoxWithButton loadDistributionCoefficient;
+
+        private System.Windows.Forms.Timer _updateTimer;
+
         public void ShowTabContent(Panel contentPanel, string[] TabNames)
         {
             contentPanel.Controls.Clear();
 
-            var winchesList = new CustomCheckedListBox("Выбор лебедки") { Margin = new Padding(25, 0, 25, 10), AutoSize=true };
-            for (int i = 0; i <= 3; i++)
+            devicePackets = DevicePackets.Instance();
+            _deviceConnector = DeviceConnector.Instance("COM3");
+
+            // Инициализация таймера
+            _updateTimer = new System.Windows.Forms.Timer();
+            _updateTimer.Interval = 1000; // Обновление каждую секунду
+            _updateTimer.Tick += UpdateVPBCrane; // Подписка на событие
+            _updateTimer.Start(); // Запуск таймера
+
+            devicePackets.VPBCraneProcessed += HandleVPBCraneProcessed;
+            devicePackets.DateTimeProcessed += HandleDateTimeProcessed;
+
+
+            winchesList = new CustomCheckedListBox("Выбор лебедки") { Margin = new Padding(25, 0, 25, 10), AutoSize=true };
+            for (int i = 1; i <= 3; i++)
             {
                 winchesList.AddItem("Лебедка " + i);
             }
 
-            var totalNumberCycles = new TextBoxWithButton("Суммарное число циклов") { PlaceholderText = "значение появляется при подключении прибора" };
-            var characteristicNumber = new TextBoxWithButton("Характеристическое число") { PlaceholderText = "значение появляется при подключении прибора" };
-            var totalCargoWeight = new TextBoxWithButton("Суммарная масса груза") { PlaceholderText = "значение появляется при подключении прибора" };
-            var loadDistributionCoefficient = new TextBoxWithButton("Коэфф. распределения нагрузок") { PlaceholderText = "значение появляется при подключении прибора" };
-            var craneTime = new DoubleLabel("Наработка крана: ") { Margin = new Padding(30, 0, 50, 10) };
+            winchesList.SelectDefaultItem();
+
+            totalNumberCycles = new TextBoxWithButton("Суммарное число циклов") { PlaceholderText = "значение появляется при подключении прибора" };
+            characteristicNumber = new TextBoxWithButton("Характеристическое число") { PlaceholderText = "значение появляется при подключении прибора" };
+            totalCargoWeight = new TextBoxWithButton("Суммарная масса груза") { PlaceholderText = "значение появляется при подключении прибора" };
+            loadDistributionCoefficient = new TextBoxWithButton("Коэфф. распределения нагрузок") { PlaceholderText = "значение появляется при подключении прибора" };
+            craneTime = new DoubleLabel("Наработка крана: ") { Margin = new Padding(30, 0, 50, 10) };
             var roundedButton = new DoubleRoundedButton
             {
                 LeftText = "Обновить",
@@ -109,6 +139,95 @@ namespace WPB_11
             layoutPanel.Controls.Add(histogramPanel, 2, 2);
 
             contentPanel.Controls.Add(layoutPanel);
+        }
+        private void UpdateVPBCrane(object sender, EventArgs e)
+        {
+            Debug.WriteLine("Пишу TabCrane");
+            if (DeviceConnector.Instance().IsConnected)
+            {
+                DeviceConnector.Instance().Request(DeviceCommands.RequestVPBCrane);
+                DeviceConnector.Instance().Request(DeviceCommands.RequestDateTime);
+            }
+        }
+
+        private void HandleVPBCraneProcessed(VPBCrane.VPBCraneStruct vpbcCrane)
+        {
+            Debug.WriteLine("HandleVPBCraneProcessed tabLong вызван"); // Отладочное сообщение
+            if (craneTime.InvokeRequired)
+            {
+                craneTime.Invoke(new Action<VPBCrane.VPBCraneStruct>(HandleVPBCraneProcessed), vpbcCrane);
+
+            }
+            else
+            {
+                // Проверяем, есть ли данные
+                if (vpbcCrane.VPBNumber != null)
+                {
+                    Win1251ToCorrectText str = new Win1251ToCorrectText();
+                    // Обновляем текстовые поля на основе данных
+                    craneTime.TimeText = vpbcCrane.OperatingTime.ToString();
+                    // Получаем выбранную лебедку
+                    string selectedWinch = winchesList.SelectedItem?.ToString(); // Предполагается, что вы используете свойство SelectedItem
+
+                    if (selectedWinch != null)
+                    {
+                        // Обновляем значения в зависимости от выбранной лебедки
+                        switch (selectedWinch)
+                        {
+                            case "Лебедка 1":
+                                totalNumberCycles.Text = vpbcCrane.SummCycles1.ToString();
+                                characteristicNumber.Text = vpbcCrane.CharacteristicNumber1.ToString(); 
+                                totalCargoWeight.Text = vpbcCrane.SummQ1.ToString(); 
+                                //loadDistributionCoefficient.Text = vpbcCrane.CoeffQ1.ToString(); // CoeffQ1 не currQ1
+                                break;
+                            case "Лебедка 2":
+                                totalNumberCycles.Text = vpbcCrane.SummCycles2.ToString();
+                                characteristicNumber.Text = vpbcCrane.CharacteristicNumber2.ToString();
+                                totalCargoWeight.Text = vpbcCrane.SummQ2.ToString(); 
+                                //loadDistributionCoefficient.Text = vpbcCrane.CoeffQ2.ToString(); // CoeffQ2 не currQ2
+                                break;
+                            case "Лебедка 3":
+                                break;
+                        }
+                    }
+                }
+                else
+                {
+                    // Обработка случая, когда данные отсутствуют
+                    Debug.WriteLine("Нет данных для обновления интерфейса device");
+                }
+            }
+        }
+
+        private void HandleDateTimeProcessed(VPBCurrType.VPBCurrTypeStruct currSensorData)
+        {
+            Debug.WriteLine("HandleDateTimeProcessed tabLong вызван"); // Отладочное сообщение
+            if (craneTime.InvokeRequired)
+            {
+                craneTime.Invoke(new Action<VPBCrane.VPBCraneStruct>(HandleVPBCraneProcessed), currSensorData);
+
+            }
+            else
+            {
+                // Получаем выбранную лебедку
+                string selectedWinch = winchesList.SelectedItem?.ToString(); // Предполагается, что вы используете свойство SelectedItem
+
+                if (selectedWinch != null)
+                {
+                    // Обновляем значения в зависимости от выбранной лебедки
+                    switch (selectedWinch)
+                    {
+                        case "Лебедка 1":
+                            loadDistributionCoefficient.Text = currSensorData.CurrQ1.ToString(); // CoeffQ1 не currQ1
+                            break;
+                        case "Лебедка 2":
+                            loadDistributionCoefficient.Text = currSensorData.CurrQ2.ToString(); // CoeffQ2 не currQ2
+                            break;
+                        case "Лебедка 3":
+                            break;
+                    }
+                }
+            }
         }
     }
 }

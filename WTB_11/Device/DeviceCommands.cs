@@ -66,7 +66,7 @@ namespace WPB_11.Device
             // Проверяем, что craneInfoMark не равен null
             if (tabC.craneInfoMark != null)
             {
-                string craneMark = tabC.craneInfoMark.Text;
+                string craneMark = "Стенд";
                 for (int i = 0; i < craneMark.Length && i < 11; i++)
                 {
                     sendData[i + 4] = (byte)craneMark[i]; // Преобразуем символ в байт

@@ -108,7 +108,10 @@ namespace WPB_11.Device
             rp.VPBCrane.Sensors = new VPBSensors.VPBSensorsStruct[8];
             rp.VPBCrane.Cycles1 = new uint[15];
             rp.VPBCrane.Cycles2 = new uint[15];
-
+            var CharacteristicByte1 = new byte[15];
+            var CharacteristicByte2 = new byte[15];
+            var SumQByte1 = new byte[15];
+            var SumQByte2 = new byte[15];
 
             // Минимальный идентификатор
             for (int i = 0; i < 11; i++)
@@ -150,34 +153,59 @@ namespace WPB_11.Device
             }
             catch { }
 
-            // Циклы 1
-            uint SummCycles1 = 0;
             for (int j = 0; j < 15; j++)
             {
-                rp.VPBCrane.Cycles1[j] = BitConverter.ToUInt32(packetData, 49 + j * 4);
-                SummCycles1 += rp.VPBCrane.Cycles1[j];
+                // Каждые 4 байта представляют одно значение LongWord
+                int startIndex1 = 48 + j * 4; // Индексы для Cycles1
+                int startIndex2 = 108 + j * 4; // Индексы для Cycles2
+
+                // Преобразуем 4 байта в uint для Cycles1
+                rp.VPBCrane.Cycles1[j] = BitConverter.ToUInt32(packetData, startIndex1);
+
+                // Преобразуем 4 байта в uint для Cycles2
+                rp.VPBCrane.Cycles2[j] = BitConverter.ToUInt32(packetData, startIndex2);
             }
 
-            // Циклы 2
-            uint SummCycles2 = 0;
-            for (int j = 0; j < 15; j++)
+            // Суммируем циклы
+            rp.VPBCrane.SummCycles1 = 0;
+            for (int j = 0; j < rp.VPBCrane.Cycles1.Length; j++)
             {
-                rp.VPBCrane.Cycles2[j] = BitConverter.ToUInt32(packetData, 109 + j * 4);
-                SummCycles2 += rp.VPBCrane.Cycles2[j];
+                rp.VPBCrane.SummCycles1 += rp.VPBCrane.Cycles1[j];
             }
 
-            // Характеристики
-            rp.VPBCrane.CharacteristicNumber1 = BitConverter.ToSingle(packetData, 169);
-            rp.VPBCrane.CharacteristicNumber2 = BitConverter.ToSingle(packetData, 173);
+            rp.VPBCrane.SummCycles2 = 0;
+            for (int j = 0; j < rp.VPBCrane.Cycles2.Length; j++)
+            {
+                rp.VPBCrane.SummCycles2 += rp.VPBCrane.Cycles2[j];
+            }
+
+            // Характеристические числа
+            for (int i = 0; i < 4; i++)
+            {
+                CharacteristicByte1[i] = (byte)packetData[168 + i];
+                CharacteristicByte2[i] = (byte)packetData[172 + i];
+            }
+            rp.VPBCrane.CharacteristicNumber1 = BitConverter.ToSingle(CharacteristicByte1, 0);
+            rp.VPBCrane.CharacteristicNumber2 = BitConverter.ToSingle(CharacteristicByte2, 0);
+
 
             // SummQ1
-            rp.VPBCrane.SummQ1 = BitConverter.ToUInt32(packetData, 177);
-
-            // SummQ2
-            rp.VPBCrane.SummQ2 = BitConverter.ToUInt32(packetData, 181);
+            for (int i = 0; i < 4; i++)
+            {
+                SumQByte1[i] = (byte)packetData[176 + i];
+                SumQByte2[i] = (byte)packetData[180 + i];
+            }
+            rp.VPBCrane.SummQ1 = BitConverter.ToUInt32(SumQByte1);
+            rp.VPBCrane.SummQ2 = BitConverter.ToUInt32(SumQByte2);
 
             // Время работы
-            rp.VPBCrane.OperatingTime = BitConverter.ToUInt32(packetData, 185);
+            //rp.VPBCrane.OperatingTime = BitConverter.ToUInt32(packetData, 185);
+            byte[] temp4bytes = new byte[4]; // Создаем массив для 4 байтов
+            for (int i = 0; i < 4; i++)
+            {
+                temp4bytes[i] = BCDToByte(packetData[185 + i]); // Копируем данные из packetData
+            }
+            rp.VPBCrane.OperatingTime = BitConverter.ToUInt32(temp4bytes, 0); // Преобразуем байты в LongWord
 
             // Qmax1
             rp.VPBCrane.MaxQ1 = BitConverter.ToUInt32(packetData, 188);
@@ -227,16 +255,11 @@ namespace WPB_11.Device
             return (bcd >> 4 & 0x0F) * 10 + (bcd & 0x0F);
         }
 
-        /*public static byte[] ConvertHexToDecimal(byte[] hexBytes)
+        public static byte BCDToByte(byte bcd)
         {
-            int numberChars = hexBytes.Length;
-            byte[] bytes = new byte[numberChars / 2];
-            for (int i = 0; i < numberChars; i += 2)
-            {
-                bytes[i / 2] = Convert.ToByte(hexBytes.Substring(i, 2), 16);
-            }
-            return bytes;
-        }*/
+            return (byte)(((bcd >> 4) * 10) + (bcd & 0x0F));
+        }
+
         public static string ConvertIntsToString(int[] intArray)
         {
             // Конвертируем массив целых чисел в массив байтов

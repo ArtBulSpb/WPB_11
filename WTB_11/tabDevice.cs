@@ -306,10 +306,10 @@ namespace WPB_11
                 {
                     // Обновляем текстовые поля на основе данных
                     serialNumber.Text = new string(vpbcCrane.VPBNumber);
-                    coeffField1.Text = vpbcCrane.CoeffQ1.ToString();
+                    coeffField1.Text = vpbcCrane.CoeffQ1.ToString(); //заменить на currQ1
                     additivField1.Text = vpbcCrane.AdditivQ1.ToString();
                     integrationField1.Text = vpbcCrane.Integral1.ToString();
-                    coeffField2.Text = vpbcCrane.CoeffQ2.ToString();
+                    coeffField2.Text = vpbcCrane.CoeffQ2.ToString(); //заменить на currQ2
                     additivField2.Text = vpbcCrane.AdditivQ2.ToString();
                     integrationField2.Text = vpbcCrane.Integral2.ToString();
                     windSpeedCoefficient.Text = vpbcCrane.MaxV.ToString();

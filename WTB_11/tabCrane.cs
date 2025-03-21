@@ -33,7 +33,7 @@ namespace WPB_11
             // Инициализация таймера
             _updateTimer = new System.Windows.Forms.Timer();
             _updateTimer.Interval = 1000; // Обновление каждую секунду
-            _updateTimer.Tick += UpdateDeviceTime; // Подписка на событие
+            _updateTimer.Tick += UpdateVPBCrane; // Подписка на событие
             _updateTimer.Start(); // Запуск таймера
 
             devicePackets.VPBCraneProcessed += HandleVPBCraneProcessed;
@@ -180,7 +180,7 @@ namespace WPB_11
             layoutPanel.RowStyles.Add(new RowStyle(SizeType.Absolute, 140)); // Для первого текстового поля
         }
 
-        private void UpdateDeviceTime(object sender, EventArgs e)
+        private void UpdateVPBCrane(object sender, EventArgs e)
         {
             Debug.WriteLine("Пишу TabCrane");
             if (DeviceConnector.Instance().IsConnected)

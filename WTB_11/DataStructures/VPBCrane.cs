@@ -28,8 +28,10 @@ namespace WPB_11.DataStructures
             public uint TpchrPoint; // Адрес программируемого значения
             public uint[] Cycles1; // Циклы 1
             public uint[] Cycles2; // Циклы 2
-            public float CharacteristicNumber1; // Характеристика 1
-            public float CharacteristicNumber2; // Характеристика 2
+            public uint SummCycles1 { get; set; }
+            public uint SummCycles2 { get; set; }
+            public Single CharacteristicNumber1; // Характеристика 1
+            public Single CharacteristicNumber2; // Характеристика 2
             public uint SummQ1; // Сумма нагрузки 1
             public uint SummQ2; // Сумма нагрузки 2
             public uint OperatingTime; // Наработка крана
