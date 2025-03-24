@@ -157,26 +157,27 @@ namespace WPB_11
 
         private void TabButton_Click(object sender, EventArgs e)
         {
-            selectedButton = (Button)sender;
-            ArrowButton arrowButton = new ArrowButton("G:\\VisualStudio\\repos\\WTB_11\\WTB_11\\Img\\arrow.PNG", 90, 200);
-            if (selectedButton != arrowButton)
-            {
-                // Получаем индекс выбранной вкладки из тега кнопки
-                int index = (int)((Button)sender).Tag;
-                ShowTabContent(index); // Показываем содержимое соответствующей вкладки
+            Button clickedButton = (Button)sender; // Получаем нажатую кнопку
 
-                // Меняем цвет кнопок
+            // Проверяем, что нажатая кнопка не является уже выбранной
+            if (clickedButton != selectedButton)
+            {
+                // Меняем цвет предыдущей кнопки на стандартный
                 if (selectedButton != null)
                 {
                     selectedButton.BackColor = tabPanel.BackColor; // Возвращаем предыдущей кнопке цвет панели вкладок
                 }
 
-                selectedButton = (Button)sender; // Запоминаем текущую выбранную кнопку
-                selectedButton.BackColor = Color.FromArgb(224, 224, 224); // Устанавливаем новый цвет для выбранной кнопки (F7F7F7)
-                
-            }
+                // Обновляем выбранную кнопку
+                selectedButton = clickedButton; // Запоминаем текущую выбранную кнопку
+                selectedButton.BackColor = Color.FromArgb(224, 224, 224); // Устанавливаем новый цвет для выбранной кнопки
 
+                // Получаем индекс выбранной вкладки из тега кнопки
+                int index = (int)clickedButton.Tag;
+                ShowTabContent(index); // Показываем содержимое соответствующей вкладки
+            }
         }
+
 
 
         private void ShowTabContent(int index)

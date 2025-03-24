@@ -11,6 +11,7 @@ using WPB_11.DataStructures;
 using static System.Net.Mime.MediaTypeNames;
 using static WPB_11.DataStructures.RP;
 using static WPB_11.DataStructures.VPBCrane;
+using static WPB_11.DataStructures.VPBDateTimeTemp;
 
 namespace WPB_11.Device
 {
@@ -19,6 +20,9 @@ namespace WPB_11.Device
         private static DevicePackets _instance;
         public event Action<VPBCurrType.VPBCurrTypeStruct> DateTimeProcessed;
         public event Action<VPBCrane.VPBCraneStruct> VPBCraneProcessed;
+
+        DateTime HighDateTime = new DateTime(1800, 01, 01, 0, 0, 0);
+        DateTime LowDateTime = new DateTime(2400, 01, 01, 0, 0, 0);
 
         public static DevicePackets Instance()
         {
@@ -203,7 +207,8 @@ namespace WPB_11.Device
             byte[] temp4bytes = new byte[4]; // Создаем массив для 4 байтов
             for (int i = 0; i < 4; i++)
             {
-                temp4bytes[i] = BCDToByte(packetData[185 + i]); // Копируем данные из packetData
+                temp4bytes[i] = packetData[184 + i]; // Копируем данные из packetData
+
             }
             rp.VPBCrane.OperatingTime = BitConverter.ToUInt32(temp4bytes, 0); // Преобразуем байты в LongWord
 
@@ -230,6 +235,12 @@ namespace WPB_11.Device
             // Интегральная характеристика 2
             rp.VPBCrane.Integral2 = packetData[205];
 
+            // TpchrPoint
+            rp.VPBCrane.TpchrPoint = (uint)packetData[44]
+                          + ((uint)packetData[45] << 8)
+                          + ((uint)packetData[46] << 16)
+                          + ((uint)packetData[47] << 24);
+
             // Датчики
             for (int i = 0; i < 8; i++)
             {
@@ -247,6 +258,122 @@ namespace WPB_11.Device
             VPBCraneProcessed?.Invoke(rp.VPBCrane);
         }
 
+        public void ProcessEEPROMPacket(byte[] packetData)
+        {
+            Debug.WriteLine($"ProcessEEPROMPacket вызван {BitConverter.ToString(packetData)}");
+
+            RP.RPStruct rp = new RP.RPStruct();
+            rp.TPCHR = new VPBCurrType.VPBCurrTypeStruct[5449];
+            var TempTPCHRKadr = new byte[24];
+            long ReadKadrPacket = 0;
+
+            for (int I = 0; I < 10; I++)
+            {
+                for (int j = 0; j < 24; j++)
+                {
+                    TempTPCHRKadr[j] = (byte)packetData[5 + I * 24 + j];
+                }
+                //rp.TPCHR[I + ReadKadrPacket * 10] = new VPBCurrType.VPBCurrTypeStruct(TempTPCHRKadr);   ?
+
+                /*MemTableEh1.Insert();
+
+                MemTableEh1.FieldValues["Index"] = I + ReadKadrPacket * 10;
+                MemTableEh1.FieldValues["DateTime"] = VPBDateTimeToDateTime(
+                    RP.TPCHR[I + ReadKadrPacket * 10].DTT.Date,
+                    RP.TPCHR[I + ReadKadrPacket * 10].DTT.Month,
+                    RP.TPCHR[I + ReadKadrPacket * 10].DTT.Year,
+                    RP.TPCHR[I + ReadKadrPacket * 10].DTT.Hour,
+                    RP.TPCHR[I + ReadKadrPacket * 10].DTT.Minute,
+                    RP.TPCHR[I + ReadKadrPacket * 10].DTT.Second
+                );*/
+
+                /*MemTableEh1.FieldValues["Temperature"] =
+                    $"{RP.TPCHR[I + ReadKadrPacket * 10].DTT.Temperature_H}," +
+                    $"{(RP.TPCHR[I + ReadKadrPacket * 10].DTT.Temperature_L >> 6) * 25}°C";
+
+                MemTableEh1.FieldValues["F1"] = RP.TPCHR[I + ReadKadrPacket * 10].CurrForce1; // Right
+                MemTableEh1.FieldValues["F2"] = RP.TPCHR[I + ReadKadrPacket * 10].CurrForce2;
+                MemTableEh1.FieldValues["Q1"] = RP.TPCHR[I + ReadKadrPacket * 10].CurrQ1;
+                MemTableEh1.FieldValues["Q2"] = RP.TPCHR[I + ReadKadrPacket * 10].CurrQ2;
+                MemTableEh1.FieldValues["M1"] = RP.TPCHR[I + ReadKadrPacket * 10].CurrPercent1;
+                MemTableEh1.FieldValues["M2"] = RP.TPCHR[I + ReadKadrPacket * 10].CurrPercent2;
+                MemTableEh1.FieldValues["Wind"] = RP.TPCHR[I + ReadKadrPacket * 10].CurrWind;
+                MemTableEh1.FieldValues["Error"] = RP.TPCHR[I + ReadKadrPacket * 10].SetupModeAndErrors & 127;
+
+                MemTableEh1.FieldValues["Status"] =
+                    (RP.TPCHR[I + ReadKadrPacket * 10].SetupModeAndErrors >> 7) == 0
+                        ? "Работа"
+                        : "Настройка";*/
+
+                // Определим начальную и конечную дату
+                var TempDateTime = new VPBDateTimeTemp.VPBDateTimeTempStruct
+                {
+                    Hour = BCDToDecimal((byte)(rp.TPCHR[I + ReadKadrPacket * 10].DTT.Hour)),
+                    Minute = BCDToDecimal((byte)(rp.TPCHR[I + ReadKadrPacket * 10].DTT).Minute),
+                    Second = BCDToDecimal((byte)(rp.TPCHR[I + ReadKadrPacket * 10].DTT).Second),
+                    Date = BCDToDecimal((byte)(rp.TPCHR[I + ReadKadrPacket * 10].DTT).Date),
+                    Month = BCDToDecimal((byte)(rp.TPCHR[I + ReadKadrPacket * 10].DTT).Month),
+                    Year = BCDToDecimal((byte)(rp.TPCHR[I + ReadKadrPacket * 10].DTT).Year)
+                };
+
+                DateTime tempDateTimeAsDateTime = ToDateTime(TempDateTime);
+                if (tempDateTimeAsDateTime > HighDateTime)
+                {
+                    HighDateTime = tempDateTimeAsDateTime;
+                    var HighDateTimeIndex = I + ReadKadrPacket * 10;
+                }
+
+                if (tempDateTimeAsDateTime < LowDateTime)
+                {
+                    LowDateTime = tempDateTimeAsDateTime;
+                    var HighDateTimeIndex = I + ReadKadrPacket * 10;
+                }
+            }
+
+            /*if (ReadKadrPacket < 544 && Button8.Tag != 0) // 271
+            {
+                ReadKadrPacket++;
+
+                ProgressBar1.Position = ReadKadrPacket;
+                SendData[0] = 0x3F;
+                SendData[1] = 0x00;
+                SendData[2] = 0x06;
+                SendData[3] = 0x1A;
+                SendData[4] = (byte)(ReadKadrPacket * 240 + 271);
+                SendData[5] = (byte)((ReadKadrPacket * 240 + 271) >> 8);
+                SendData[6] = (byte)((ReadKadrPacket * 240 + 271) >> 16);
+                SendData[7] = (byte)((ReadKadrPacket * 240 + 271) >> 24);
+                SendData[8] = 0xF0;
+                SendData[9] = 0;
+
+                for (int i = 0; i < 9; i++)
+                {
+                    SendData[9] ^= SendData[i]; // XOR для контрольной суммы
+                }
+
+                ActiveDataPacket(2);
+                try
+                {
+                    nrComm1.SendData(SendData, 10); // Успех
+                }
+                catch
+                {
+                    // Если произошла ошибка, возвращаемся к началу
+                    Timer1.Enabled = true; // Включаем таймер
+                    return; // Выходим из метода
+                }
+            }
+            else
+            {
+                Button8.Tag = 0; // Снимаем флаг "читаю тпчр"
+                Button8.Enabled = true;
+                ProgressBar1.Position = 0;
+                ProgressBar1.Visible = false;
+                MainForm.MemTableEh1.Post();
+                ActiveDataPacket(0);
+            }*/
+        }
+
 
 
 
@@ -260,19 +387,19 @@ namespace WPB_11.Device
             return (byte)(((bcd >> 4) * 10) + (bcd & 0x0F));
         }
 
-        public static string ConvertIntsToString(int[] intArray)
+        public DateTime ToDateTime(VPBDateTimeTempStruct dateTimeStruct)
         {
-            // Конвертируем массив целых чисел в массив байтов
-            byte[] byteArray = Array.ConvertAll(intArray, n => (byte)n);
+            int year = BCDToDecimal((byte)dateTimeStruct.Year) + 2000; // Предполагается, что год хранится в формате BCD
+            int month = BCDToDecimal((byte)dateTimeStruct.Month);
+            int day = BCDToDecimal((byte)dateTimeStruct.Date);
+            int hour = BCDToDecimal((byte)dateTimeStruct.Hour);
+            int minute = BCDToDecimal((byte)dateTimeStruct.Minute);
+            int second = BCDToDecimal((byte)dateTimeStruct.Second);
 
-            // Преобразуем байты в строку с использованием кодировки Windows-1251
-            string windows1251String = Encoding.GetEncoding(1251).GetString(byteArray);
-
-            // Преобразуем строку в массив байтов в кодировке UTF-16
-            byte[] utf16Bytes = Encoding.Unicode.GetBytes(windows1251String);
-
-            // Преобразуем обратно в строку для вывода
-            return Encoding.Unicode.GetString(utf16Bytes);
+            return new DateTime(year, month, day, hour, minute, second);
         }
+
+
+
     }
 }

@@ -165,7 +165,10 @@ namespace WPB_11
                 {
                     Win1251ToCorrectText str = new Win1251ToCorrectText();
                     // Обновляем текстовые поля на основе данных
-                    craneTime.TimeText = vpbcCrane.OperatingTime.ToString();
+                    craneTime.TimeText = string.Format("{0} : {1} : {2}",
+                        vpbcCrane.OperatingTime / 3600,
+                        (vpbcCrane.OperatingTime % 3600) / 60,
+                        (vpbcCrane.OperatingTime % 3600) % 60);
                     // Получаем выбранную лебедку
                     string selectedWinch = winchesList.SelectedItem?.ToString(); // Предполагается, что вы используете свойство SelectedItem
 

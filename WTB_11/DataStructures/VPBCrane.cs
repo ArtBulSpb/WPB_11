@@ -25,7 +25,7 @@ namespace WPB_11.DataStructures
             public byte LoadGroup; // Группа нагрузки
             public byte MaxV; // Максимальная скорость
             public byte IntegralV; // Интегральная скорость
-            public uint TpchrPoint; // Адрес программируемого значения
+            public uint TpchrPoint; // Адрес последней записи в ТПЧР
             public uint[] Cycles1; // Циклы 1
             public uint[] Cycles2; // Циклы 2
             public uint SummCycles1 { get; set; }

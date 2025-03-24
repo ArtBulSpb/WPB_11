@@ -11,8 +11,8 @@ namespace WPB_11.DataStructures
         public struct RPStruct
         {
             public VPBCrane.VPBCraneStruct VPBCrane;
-            public VPBCurrType[] TPCHR; // Массив TPCHR
-            public VPBCurrType[] TP; // Массив TP
+            public VPBCurrType.VPBCurrTypeStruct[] TPCHR; // Массив TPCHR
+            public VPBCurrType.VPBCurrTypeStruct[] TP; // Массив TP
         }
 
     }

@@ -37,7 +37,7 @@ namespace WPB_11
         {
             contentPanel.Controls.Clear();
 
-            devicePackets = new DevicePackets();
+            devicePackets = DevicePackets.Instance();
             _deviceConnector = DeviceConnector.Instance("COM3");
 
 
