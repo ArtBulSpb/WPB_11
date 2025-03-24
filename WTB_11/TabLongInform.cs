@@ -23,6 +23,7 @@ namespace WPB_11
         private TextBoxWithButton characteristicNumber;
         private TextBoxWithButton totalCargoWeight;
         private TextBoxWithButton loadDistributionCoefficient;
+        private HistogramControl histogramControl;
 
         private System.Windows.Forms.Timer _updateTimer;
 
@@ -70,7 +71,7 @@ namespace WPB_11
             roundedButton.RightButtonClick += (s, e) => MessageBox.Show("Нажата кнопка 'Печать'!");
 
 
-            var histogramControl = new HistogramControl
+            histogramControl = new HistogramControl
             {
                 Location = new Point(10, 10)
             };
@@ -180,13 +181,15 @@ namespace WPB_11
                             case "Лебедка 1":
                                 totalNumberCycles.Text = vpbcCrane.SummCycles1.ToString();
                                 characteristicNumber.Text = vpbcCrane.CharacteristicNumber1.ToString(); 
-                                totalCargoWeight.Text = vpbcCrane.SummQ1.ToString(); 
+                                totalCargoWeight.Text = vpbcCrane.SummQ1.ToString();
+                                histogramControl.SetData(DataForHistogram(vpbcCrane.Cycles1));
                                 //loadDistributionCoefficient.Text = vpbcCrane.CoeffQ1.ToString(); // CoeffQ1 не currQ1
                                 break;
                             case "Лебедка 2":
                                 totalNumberCycles.Text = vpbcCrane.SummCycles2.ToString();
                                 characteristicNumber.Text = vpbcCrane.CharacteristicNumber2.ToString();
-                                totalCargoWeight.Text = vpbcCrane.SummQ2.ToString(); 
+                                totalCargoWeight.Text = vpbcCrane.SummQ2.ToString();
+                                histogramControl.SetData(DataForHistogram(vpbcCrane.Cycles2));
                                 //loadDistributionCoefficient.Text = vpbcCrane.CoeffQ2.ToString(); // CoeffQ2 не currQ2
                                 break;
                             case "Лебедка 3":
@@ -231,6 +234,16 @@ namespace WPB_11
                     }
                 }
             }
+        }
+
+        private float[] DataForHistogram(uint[] cyclesData1) //перевод массива циклов из uint в тип который принимает гистограмма (float)
+        {
+            float[] histogramData = new float[cyclesData1.Length];
+            for (int i = 0; i < cyclesData1.Length; i++)
+            {
+                histogramData[i] = (float)cyclesData1[i]; // Преобразование типа
+            }
+            return histogramData;
         }
     }
 }
