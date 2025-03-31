@@ -1,16 +1,36 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using WPB_11.DataStructures;
+using WPB_11.Device;
 
 namespace WPB_11
 {
     class TabShortInform
     {
+        private DeviceConnector _deviceConnector;
+        private DevicePackets devicePackets;
+
+        private System.Windows.Forms.Timer _updateTimer;
+
         public void ShowTabContent(Panel contentPanel, string[] TabNames)
         {
             contentPanel.Controls.Clear();
+
+            devicePackets = DevicePackets.Instance();
+            _deviceConnector = DeviceConnector.Instance("COM3");
+
+            // Инициализация таймера
+            _updateTimer = new System.Windows.Forms.Timer();
+            _updateTimer.Interval = 1000; // Обновление каждую секунду
+            _updateTimer.Tick += UpdateVPBCrane; // Подписка на событие
+            _updateTimer.Start(); // Запуск таймера
+
+            devicePackets.VPBCraneProcessed += HandleVPBCraneProcessed;
+
 
             // Создаем DataGridView для отображения данных
             DataGridView dataGridView = new DataGridView
@@ -115,6 +135,28 @@ namespace WPB_11
             contentPanel.Controls.Add(layoutPanel);
         }
 
+        private void UpdateVPBCrane(object sender, EventArgs e)
+        {
+            Debug.WriteLine("Пишу TabCrane");
+            if (DeviceConnector.Instance().IsConnected)
+            {
+                DeviceConnector.Instance().Request(DeviceCommands.RequestVPBCrane);
+                DeviceConnector.Instance().Request(DeviceCommands.RequestDateTime);
+            }
+        }
 
+        private void HandleVPBCraneProcessed(VPBCrane.VPBCraneStruct vpbcCrane)
+        {
+            Debug.WriteLine("HandleVPBCraneProcessed tabLong вызван"); // Отладочное сообщение
+            if (craneTime.InvokeRequired)
+            {
+                craneTime.Invoke(new Action<VPBCrane.VPBCraneStruct>(HandleVPBCraneProcessed), vpbcCrane);
+
+            }
+            else
+            {
+
+            }
+        }
     }
 }

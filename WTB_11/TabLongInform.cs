@@ -76,8 +76,8 @@ namespace WPB_11
                 Location = new Point(10, 10)
             };
             // Пример данных для гистограммы
-            float[] histogramData = { 10, 20, 30, 40, 50, 60, 70, 80, 90, 100 };
-            histogramControl.SetData(histogramData);
+            /*float[] histogramData = { 10, 20, 30, 40, 50, 60, 70, 80, 90, 100 };
+            histogramControl.SetData(histogramData);*/
             histogramControl.Text = "Гистограмма";
             histogramControl.Size = new Size(450, 400);
 
@@ -183,6 +183,7 @@ namespace WPB_11
                                 characteristicNumber.Text = vpbcCrane.CharacteristicNumber1.ToString(); 
                                 totalCargoWeight.Text = vpbcCrane.SummQ1.ToString();
                                 histogramControl.SetData(DataForHistogram(vpbcCrane.Cycles1));
+
                                 //loadDistributionCoefficient.Text = vpbcCrane.CoeffQ1.ToString(); // CoeffQ1 не currQ1
                                 break;
                             case "Лебедка 2":
@@ -245,5 +246,8 @@ namespace WPB_11
             }
             return histogramData;
         }
+
+        
+
     }
 }
