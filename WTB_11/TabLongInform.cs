@@ -1,5 +1,7 @@
-﻿using System;
+﻿using FastReport;
+using System;
 using System.Collections.Generic;
+using System.Data;
 using System.Diagnostics;
 using System.Linq;
 using System.Numerics;
@@ -7,6 +9,7 @@ using System.Text;
 using System.Threading.Tasks;
 using WPB_11.DataStructures;
 using WPB_11.Device;
+using WPB_11.Reports;
 using static System.Runtime.InteropServices.JavaScript.JSType;
 using static System.Windows.Forms.VisualStyles.VisualStyleElement.TextBox;
 
@@ -26,6 +29,8 @@ namespace WPB_11
         private HistogramControl histogramControl;
 
         private System.Windows.Forms.Timer _updateTimer;
+        private VPBCrane.VPBCraneStruct _currentVpbcCrane;
+
 
         public void ShowTabContent(Panel contentPanel, string[] TabNames)
         {
@@ -68,7 +73,7 @@ namespace WPB_11
 
             // Подписка на события
             roundedButton.LeftButtonClick += (s, e) => MessageBox.Show("Нажата кнопка 'Обновить'!");
-            roundedButton.RightButtonClick += (s, e) => MessageBox.Show("Нажата кнопка 'Печать'!");
+            roundedButton.RightButtonClick += OnPrintButtonClick;
 
 
             histogramControl = new HistogramControl
@@ -154,6 +159,9 @@ namespace WPB_11
         private void HandleVPBCraneProcessed(VPBCrane.VPBCraneStruct vpbcCrane)
         {
             Debug.WriteLine("HandleVPBCraneProcessed tabLong вызван"); // Отладочное сообщение
+
+            _currentVpbcCrane = vpbcCrane;
+
             if (craneTime.InvokeRequired)
             {
                 craneTime.Invoke(new Action<VPBCrane.VPBCraneStruct>(HandleVPBCraneProcessed), vpbcCrane);
@@ -247,7 +255,19 @@ namespace WPB_11
             return histogramData;
         }
 
-        
+        private void OnPrintButtonClick(object sender, EventArgs e)
+        {
+            Debug.WriteLine("OnPrintButtonClick tabLong печатаю");
+            GenerateReport(_currentVpbcCrane);
+        }
+
+
+        private void GenerateReport(VPBCrane.VPBCraneStruct vpbcCrane)
+        {
+            // Создаем экземпляр VPBReports
+            VPBReports report = new VPBReports("G:\\VisualStudio\\repos\\WTB_11\\WTB_11\\Reports\\rep.fr3");
+            report.GenerateReport(vpbcCrane);
+        }
 
     }
 }

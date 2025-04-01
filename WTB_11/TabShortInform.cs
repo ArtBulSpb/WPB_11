@@ -148,15 +148,7 @@ namespace WPB_11
         private void HandleVPBCraneProcessed(VPBCrane.VPBCraneStruct vpbcCrane)
         {
             Debug.WriteLine("HandleVPBCraneProcessed tabLong вызван"); // Отладочное сообщение
-            if (craneTime.InvokeRequired)
-            {
-                craneTime.Invoke(new Action<VPBCrane.VPBCraneStruct>(HandleVPBCraneProcessed), vpbcCrane);
-
-            }
-            else
-            {
-
-            }
+            
         }
     }
 }
