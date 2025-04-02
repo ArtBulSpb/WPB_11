@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="utf-8" standalone="no"?>
+<Report ReportInfo.Name="" ReportInfo.Author="" ReportInfo.Description="">
+  <Dictionary/>
+  <ReportPage Name="Page1" PaperWidth="210" PaperHeight="297" LeftMargin="10" RightMargin="10" TopMargin="10" BottomMargin="10" Columns.Count="0" Columns.Width="0" TitleBeforeHeader="true">
+    <ReportTitleBand Name="ReportTitle1" Height="304.46">
+      <PictureObject Name="Picture1" Left="7.56" Top="7.56" Width="64.25" Height="79.37" Fill.Color="255, 255, 255" SizeMode="Zoom"/>
+      <TextObject Name="Memo6" Left="0" Top="143.87" Width="226.77" Height="18.90" Text="Подъемное сооружение:" Padding="2, 1, 2, 1" HorzAlign="Left" VertAlign="Top"/>
+      <TextObject Name="Crane" Left="229.33" Top="143.87" Width="318.70" Height="18.90" Font="Arial, 10pt, style=Bold" Text="[Crane]" Padding="2, 1, 2, 1" HorzAlign="Left" VertAlign="Top"/>
+      <TextObject Name="Memo8" Left="-0.22" Top="166.55" Width="158.74" Height="18.90" Text="Зав №:" Padding="2, 1, 2, 1" HorzAlign="Left" VertAlign="Top"/>
+      <TextObject Name="Crane_Number" Left="158.74" Top="166.55" Width="124.72" Height="18.90" Font="Arial, 10pt, style=Bold" Text="[Crane_Number]" Padding="2, 1, 2, 1" HorzAlign="Left" VertAlign="Top"/>
+      <TextObject Name="Memo10" Left="0.78" Top="198.79" Width="83.15" Height="18.90" Text="Регистратор параметров:" Padding="2, 1, 2, 1" HorzAlign="Left" VertAlign="Top"/>
+      <TextObject Name="Registrator" Left="87.71" Top="198.79" Width="128.50" Height="18.90" Font="Arial, 10pt, style=Bold" Text="[Registrator]" Padding="2, 1, 2, 1" HorzAlign="Left" VertAlign="Top"/>
+      <TextObject Name="Memo12" Left="219.21" Top="198.89" Width="44.35" Height="18.90" Text="Зав.№" Padding="2, 1, 2, 1" HorzAlign="Left" VertAlign="Top"/>
+      <TextObject Name="VPB_FactNum" Left="265.57" Top="198.89" Width="102.39" Height="18.90" Font="Arial, 10pt, style=Bold" Text="[VPB_FactNum]" Padding="2, 1, 2, 1" HorzAlign="Left" VertAlign="Top"/>
+      <TextObject Name="Memo14" Left="1.46" Top="221.57" Width="78.93" Height="18.90" Text="Версия ПО:" Padding="2, 1, 2, 1" HorzAlign="Left" VertAlign="Top"/>
+      <TextObject Name="VPB_SoftVersion" Left="81.39" Top="221.57" Width="118.96" Height="18.90" Font="Arial, 10pt, style=Bold" Text="[VPB_SoftVersion]" Padding="2, 1, 2, 1" HorzAlign="Left" VertAlign="Top"/>
+      <TextObject Name="ServiceCompany" Left="86.93" Top="26.46" Width="83.15" Height="49.13" Font="Monotype Corsiva, 28pt, style=Bold, Italic" Text="Вира" Padding="2, 1, 2, 1" HorzAlign="Left" VertAlign="Top"/>
+      <TextObject Name="Memo49" Left="158.74" Top="102.05" Width="370.39" Height="22.68" Font="Arial, 14pt, style=Bold" Text="Отчет регистратора параметров" Padding="2, 1, 2, 1" HorzAlign="Center" VertAlign="Top"/>
+      <TextObject Name="Memo1" Left="219.09" Top="221.99" Width="188.54" Height="18.90" Text="Дата установки регистратора:" Padding="2, 1, 2, 1" HorzAlign="Left" VertAlign="Top"/>
+      <TextObject Name="VPB_SetupDate" Left="409.63" Top="221.99" Width="118.96" Height="18.90" Font="Arial, 10pt, style=Bold" Text="[VPB_SetupDate]" Padding="2, 1, 2, 1" HorzAlign="Left" VertAlign="Top"/>
+      <TextObject Name="Memo17" Left="0" Top="257.01" Width="203.65" Height="18.90" Text="Дата и время снятия показаний:" Padding="2, 1, 2, 1" HorzAlign="Left" VertAlign="Top"/>
+      <TextObject Name="ReadDataDateTime" Left="205.65" Top="257.01" Width="141.64" Height="18.90" Font="Arial, 10pt, style=Bold" Text="[ReadDataDateTime]" Padding="2, 1, 2, 1" HorzAlign="Left" VertAlign="Top"/>
+      <TextObject Name="Memo19" Left="0" Top="279.69" Width="177.20" Height="18.90" Text="Дата и время регистратора:" Padding="2, 1, 2, 1" HorzAlign="Left" VertAlign="Top"/>
+      <TextObject Name="VPB_DateTime" Left="179.20" Top="279.69" Width="118.96" Height="18.90" Font="Arial, 10pt, style=Bold" Text="[VPB_DateTime]" Padding="2, 1, 2, 1" HorzAlign="Left" VertAlign="Top"/>
+      <TextObject Name="Memo21" Left="298.58" Top="166.30" Width="177.64" Height="18.90" Text="Группа режима нагружения:" Padding="2, 1, 2, 1" HorzAlign="Left" VertAlign="Top"/>
+      <TextObject Name="Load_Group" Left="476.44" Top="166.30" Width="94.49" Height="18.90" Font="Arial, 10pt, style=Bold" Text="[Load_Group]" Padding="2, 1, 2, 1" HorzAlign="Left" VertAlign="Top"/>
+    </ReportTitleBand>
+    <OverlayBand Name="Overlay1" Height="0">
+      <TextObject Name="TOCaption" Left="623.62" Top="-49.13" Width="457.32" Height="18.90" Font="Arial, 12pt, style=Bold" Text="[TOCaption]" Padding="2, 1, 2, 1" HorzAlign="Center" VertAlign="Top"/>
+    </OverlayBand>
+  </ReportPage>
+</Report>

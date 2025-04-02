@@ -265,7 +265,7 @@ namespace WPB_11
         private void GenerateReport(VPBCrane.VPBCraneStruct vpbcCrane)
         {
             // Создаем экземпляр VPBReports
-            VPBReports report = new VPBReports("G:\\VisualStudio\\repos\\WTB_11\\WTB_11\\Reports\\rep.fr3");
+            VPBReports report = new VPBReports("G:\\VisualStudio\\repos\\WTB_11\\WTB_11\\Reports\\rep.frx");
             report.GenerateReport(vpbcCrane);
         }
 

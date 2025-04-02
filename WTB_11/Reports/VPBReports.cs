@@ -30,8 +30,15 @@ namespace WPB_11.Reports
                     report.Load(_reportPath);
                     Debug.WriteLine("Load");
 
+                    if (report.Pages.Count == 0)
+                    {
+                        MessageBox.Show("Отчет загружен, но не содержит страниц.");
+                        return;
+                    }
+
                     // Заполняем текстовые поля отчета
-                    FillTextFields(report, craneData);
+                    //FillTextFields(report, craneData);
+
 
                     // Подготавливаем отчет
                     report.Prepare();
@@ -51,18 +58,23 @@ namespace WPB_11.Reports
         private void FillTextFields(Report report, VPBCrane.VPBCraneStruct craneData)
         {
             // Заполнение текстовых полей отчета
-            var page = report.Pages[0];
-           
+            if (report.Pages.Count > 0)
+            {
+                var page = report.Pages[0]; 
+                
+                TextObject Crane = (TextObject)page.FindObject("Crane");
+                Crane.Text = System.Text.Encoding.UTF8.GetString(craneData.Crane);
 
-            TextObject Crane = (TextObject)page.FindObject("Crane");
-            Crane.Text = System.Text.Encoding.UTF8.GetString(craneData.Crane);
+                TextObject CraneNumber = (TextObject)page.FindObject("CraneNumber");
+                CraneNumber.Text = new string(craneData.CraneNumber);
 
-            TextObject CraneNumber = (TextObject)page.FindObject("CraneNumber");
-            CraneNumber.Text = new string(craneData.CraneNumber);
-
-            TextObject VPBNumber = (TextObject)page.FindObject("VPBNumber");
-            VPBNumber.Text = new string(craneData.VPBNumber);
-
+                TextObject VPBNumber = (TextObject)page.FindObject("VPBNumber");
+                VPBNumber.Text = new string(craneData.VPBNumber);
+            }
+            else
+            {
+                MessageBox.Show("Отчет не имеет страниц");
+            }
         }
     }
 }
