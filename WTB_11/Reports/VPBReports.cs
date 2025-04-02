@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Data;
 using System.Diagnostics;
 using System.Linq;
+using System.Security.Cryptography;
 using System.Text;
 using System.Threading.Tasks;
 using FastReport;
@@ -37,7 +38,7 @@ namespace WPB_11.Reports
                     }
 
                     // Заполняем текстовые поля отчета
-                    //FillTextFields(report, craneData);
+                    FillTextFields(report, craneData);
 
 
                     // Подготавливаем отчет
@@ -60,16 +61,42 @@ namespace WPB_11.Reports
             // Заполнение текстовых полей отчета
             if (report.Pages.Count > 0)
             {
-                var page = report.Pages[0]; 
-                
-                TextObject Crane = (TextObject)page.FindObject("Crane");
-                Crane.Text = System.Text.Encoding.UTF8.GetString(craneData.Crane);
+                var page = report.Pages[0];
+                Debug.WriteLine($"Ошибка при генерации отчета: {System.Text.Encoding.UTF8.GetString(craneData.Crane)}");
 
-                TextObject CraneNumber = (TextObject)page.FindObject("CraneNumber");
-                CraneNumber.Text = new string(craneData.CraneNumber);
+                if (craneData.Crane != null)
+                {
+                    TextObject Crane = (TextObject)page.FindObject("Crane");
+                    Crane.Text = System.Text.Encoding.UTF8.GetString(craneData.Crane);
+                }
+                if (craneData.CraneNumber != null)
+                {
+                    TextObject CraneNumber = (TextObject)page.FindObject("Crane_Number");
+                    CraneNumber.Text = new string(craneData.CraneNumber);
+                }
+                if (craneData.VPBNumber != null)
+                {
+                    TextObject VPBNumber = (TextObject)page.FindObject("VPB_FactNum");
+                    VPBNumber.Text = new string(craneData.VPBNumber);
+                }
+                if (craneData.LoadGroup != 0)
+                {
+                    TextObject LoadGroup = (TextObject)page.FindObject("Load_Group");
+                    LoadGroup.Text = ((char)craneData.LoadGroup).ToString();
+                }
+                if (craneData.ProgramVersion != 0)
+                {
+                    TextObject ProgramVersion = (TextObject)page.FindObject("VPB_SoftVersion");
+                    ProgramVersion.Text = ((char)craneData.ProgramVersion).ToString();
+                }
+                if (craneData.SetupDate != null)
+                {
+                    TextObject SetupDate = (TextObject)page.FindObject("VPB_SetupDate");
+                    SetupDate.Text = System.Text.Encoding.UTF8.GetString(craneData.SetupDate);
+                }
 
-                TextObject VPBNumber = (TextObject)page.FindObject("VPBNumber");
-                VPBNumber.Text = new string(craneData.VPBNumber);
+                TextObject ReadDataDateTime = (TextObject)page.FindObject("ReadDataDateTime");
+                ReadDataDateTime.Text = DateTime.Now.ToString();
             }
             else
             {
