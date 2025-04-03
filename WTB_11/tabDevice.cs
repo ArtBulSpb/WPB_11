@@ -283,7 +283,7 @@ namespace WPB_11
 
         private void UpdateDeviceTime(object sender, EventArgs e)
         {
-            Debug.WriteLine("Пишу TabDevice");
+            //Debug.WriteLine("Пишу TabDevice");
             if (DeviceConnector.Instance().IsConnected)
             {
                 DeviceConnector.Instance().Request(DeviceCommands.RequestVPBCrane);
@@ -293,7 +293,7 @@ namespace WPB_11
 
         private void HandleVPBCraneProcessed(VPBCrane.VPBCraneStruct vpbcCrane)
         {
-            Debug.WriteLine("HandleVPBCraneProcessed вызван"); // Отладочное сообщение
+            //Debug.WriteLine("HandleVPBCraneProcessed вызван"); // Отладочное сообщение
 
             if (serialNumber.InvokeRequired)
             {

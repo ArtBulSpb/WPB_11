@@ -151,7 +151,7 @@ namespace WPB_11.Device
 
         public void Request(byte[] sendData)
         {
-            Debug.WriteLine("ProcessReceivedData");
+            //Debug.WriteLine("ProcessReceivedData");
             //OnDeviceConnected?.Invoke("Отправляю команду для получения даты и времени.");
             if (IsConnected)
             {
@@ -185,7 +185,7 @@ namespace WPB_11.Device
 
         private void ProcessReceivedData(byte[] packetData)
         {
-            Debug.WriteLine("ProcessReceivedData");
+            //Debug.WriteLine("ProcessReceivedData");
             // Проверяем, что пакет содержит достаточно данных
             if (packetData.Length < 13)
             {
@@ -195,16 +195,16 @@ namespace WPB_11.Device
 
             // Извлекаем айди пакета из четвертого байта
             byte packetId = packetData[3];
-            Debug.WriteLine($"Id {packetId}");
+            //Debug.WriteLine($"Id {packetId}");
             switch (packetId)
             {
                 case 1: // пакет дата время температура
-                    Debug.WriteLine($"ProcessDateTimePacket");
+                    //Debug.WriteLine($"ProcessDateTimePacket");
                     _devicePackets.ProcessDateTimePacket(packetData);
                     break;
 
                 case 3: // запрос прибор/кран
-                    Debug.WriteLine($"ProcessVPBCrane");
+                    //Debug.WriteLine($"ProcessVPBCrane");
                     _devicePackets.ProcessVPBCrane(packetData);
                     break;
 

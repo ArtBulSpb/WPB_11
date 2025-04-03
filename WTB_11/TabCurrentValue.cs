@@ -311,7 +311,7 @@ namespace WPB_11
 
         private void UpdateDeviceTime(object sender, EventArgs e)
         {
-            Debug.WriteLine("Пишу что-то");
+            //Debug.WriteLine("Пишу что-то");
             if (DeviceConnector.Instance().IsConnected)
             {
                 DeviceConnector.Instance().Request(DeviceCommands.RequestDateTime);
@@ -322,7 +322,7 @@ namespace WPB_11
 
         private void HandleDateTimeProcessed(VPBCurrType.VPBCurrTypeStruct sensorData)
         {
-            Debug.WriteLine("HandleDateTimeProcessed вызван"); 
+            //Debug.WriteLine("HandleDateTimeProcessed вызван"); 
             if (deviceTime.InvokeRequired)
             {
                 deviceTime.Invoke(new Action<VPBCurrType.VPBCurrTypeStruct>(HandleDateTimeProcessed), sensorData);

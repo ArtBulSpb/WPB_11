@@ -182,7 +182,7 @@ namespace WPB_11
 
         private void UpdateVPBCrane(object sender, EventArgs e)
         {
-            Debug.WriteLine("Пишу TabCrane");
+            //Debug.WriteLine("Пишу TabCrane");
             if (DeviceConnector.Instance().IsConnected)
             {
                 DeviceConnector.Instance().Request(DeviceCommands.RequestVPBCrane);
@@ -192,7 +192,7 @@ namespace WPB_11
 
         private void HandleVPBCraneProcessed(VPBCrane.VPBCraneStruct vpbcCrane)
         {
-            Debug.WriteLine("HandleVPBCraneProcessed tabCrane вызван"); // Отладочное сообщение
+            //Debug.WriteLine("HandleVPBCraneProcessed tabCrane вызван"); // Отладочное сообщение
             if (craneInfoMark.InvokeRequired)
             {
                 craneInfoMark.Invoke(new Action<VPBCrane.VPBCraneStruct>(HandleVPBCraneProcessed), vpbcCrane);
@@ -266,5 +266,24 @@ namespace WPB_11
 
             }
         }
+
+        public string GetSelectedLoadingModes()
+        {
+            // Проверяем, инициализирован ли loadingMode
+            if (loadingMode == null)
+            {
+                return ""; // Или обработайте это как-то иначе
+            }
+
+            // Получаем выбранный элемент из ComboBox
+            string selectedItem = loadingMode.SelectedItem;
+
+            // Если выбранный элемент не null, возвращаем его, иначе возвращаем "0"
+            return selectedItem;
+        }
+
     }
+
+
 }
+

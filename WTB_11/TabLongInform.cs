@@ -148,7 +148,7 @@ namespace WPB_11
         }
         private void UpdateVPBCrane(object sender, EventArgs e)
         {
-            Debug.WriteLine("Пишу TabCrane");
+            //Debug.WriteLine("Пишу TabCrane");
             if (DeviceConnector.Instance().IsConnected)
             {
                 DeviceConnector.Instance().Request(DeviceCommands.RequestVPBCrane);
@@ -158,7 +158,7 @@ namespace WPB_11
 
         private void HandleVPBCraneProcessed(VPBCrane.VPBCraneStruct vpbcCrane)
         {
-            Debug.WriteLine("HandleVPBCraneProcessed tabLong вызван"); // Отладочное сообщение
+            //Debug.WriteLine("HandleVPBCraneProcessed tabLong вызван"); // Отладочное сообщение
 
             _currentVpbcCrane = vpbcCrane;
 
@@ -216,7 +216,7 @@ namespace WPB_11
 
         private void HandleDateTimeProcessed(VPBCurrType.VPBCurrTypeStruct currSensorData)
         {
-            Debug.WriteLine("HandleDateTimeProcessed tabLong вызван"); // Отладочное сообщение
+            //Debug.WriteLine("HandleDateTimeProcessed tabLong вызван"); // Отладочное сообщение
             if (craneTime.InvokeRequired)
             {
                 craneTime.Invoke(new Action<VPBCrane.VPBCraneStruct>(HandleVPBCraneProcessed), currSensorData);

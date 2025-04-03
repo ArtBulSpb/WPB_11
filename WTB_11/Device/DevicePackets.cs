@@ -35,7 +35,7 @@ namespace WPB_11.Device
 
         public void ProcessDateTimePacket(byte[] packetData)
         {
-            Debug.WriteLine($"ProcessDateTimePacket вызван {BitConverter.ToString(packetData)}");
+            //Debug.WriteLine($"ProcessDateTimePacket вызван {BitConverter.ToString(packetData)}");
             // Создание структуры для текущих значений
             VPBCurrType.VPBCurrTypeStruct sensorData = new VPBCurrType.VPBCurrTypeStruct
             {
@@ -100,7 +100,7 @@ namespace WPB_11.Device
 
         public void ProcessVPBCrane(byte[] packetData)
         {
-            Debug.WriteLine($"Начало обработки данных VPBCrane {BitConverter.ToString(packetData)}");
+            //Debug.WriteLine($"Начало обработки данных VPBCrane {BitConverter.ToString(packetData)}");
 
             // Краны
             RP.RPStruct rp = new RP.RPStruct();
@@ -120,7 +120,7 @@ namespace WPB_11.Device
             // Минимальный идентификатор
             for (int i = 0; i < 11; i++)
             {
-                rp.VPBCrane.VPBNumber[i] = (char)packetData[i + 16];
+                rp.VPBCrane.VPBNumber[i] = (char)packetData[i + 15];
             }
 
             // Номер крана
@@ -132,14 +132,14 @@ namespace WPB_11.Device
             // Дата настройки
             for (int i = 0; i < 3; i++)
             {
-                rp.VPBCrane.SetupDate[i] = packetData[38 + i];
+                rp.VPBCrane.SetupDate[i] = packetData[37 + i];
             }
 
             // Версия программы
-            rp.VPBCrane.ProgramVersion = packetData[41];
+            rp.VPBCrane.ProgramVersion = packetData[40];
 
             // Группа нагрузки
-            rp.VPBCrane.LoadGroup = packetData[42];
+            rp.VPBCrane.LoadGroup = packetData[41];
 
             // Максимальная скорость
             rp.VPBCrane.MaxV = packetData[42];
