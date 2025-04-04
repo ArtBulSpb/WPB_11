@@ -190,6 +190,8 @@ namespace WPB_11
                                 totalNumberCycles.Text = vpbcCrane.SummCycles1.ToString();
                                 characteristicNumber.Text = vpbcCrane.CharacteristicNumber1.ToString(); 
                                 totalCargoWeight.Text = vpbcCrane.SummQ1.ToString();
+                                uint[] zalupa = new uint[8];
+                                zalupa = new uint[] { 1,2,3,4,5,6,7,8};
                                 histogramControl.SetData(DataForHistogram(vpbcCrane.Cycles1));
 
                                 //loadDistributionCoefficient.Text = vpbcCrane.CoeffQ1.ToString(); // CoeffQ1 не currQ1

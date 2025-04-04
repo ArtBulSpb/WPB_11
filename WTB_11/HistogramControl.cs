@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -58,7 +59,7 @@ namespace WPB_11
         {
             if (data == null || data.Length == 0) return;
 
-            float barWidth = (this.ClientSize.Width - 80) / (data.Length * 2.3f); // Ширина столбца
+            float barWidth = (this.ClientSize.Width - 80) / (7 * 2.3f); // Ширина столбца
             float scaleFactor = (this.ClientSize.Height - 80) / maxCycles; // Масштаб для высоты
 
             // Укажите смещения для сдвига
@@ -73,37 +74,65 @@ namespace WPB_11
             {
                 int value = yLabels[i]; // Значение метки
                 float yPosition = this.Height - 40 - value * scaleFactor; // Позиция по Y для линии
-                float xPosition = xOffset + i * (barWidth * 2.3f); // Увеличиваем расстояние между метками
+                float xPosition = xOffset + i * (barWidth * 2.3f); // Позиция по X для метки
 
                 // Рисуем серую линию
                 e.Graphics.DrawLine(Pens.Gray, xPosition, 20, xPosition, this.Height - 60);
 
                 // Рисуем метку
-                e.Graphics.DrawString(value.ToString(), new Font("Arial", 8), Brushes.Black, xPosition - 5, this.Height - 55);
+                e.Graphics.DrawString(value.ToString(), new Font("Arial", 10), Brushes.Black, xPosition - 5, this.Height - 55);
             }
 
             // Добавляем метку ">140"
             float lastYPosition = this.Height - 40 - 140 * scaleFactor; // Позиция для ">140"
             e.Graphics.DrawLine(Pens.Gray, xOffset + (yLabels.Length * (barWidth * 2.3f)), 20, xOffset + (yLabels.Length * (barWidth * 2.3f)), this.Height - 60);
-            e.Graphics.DrawString(">140", new Font("Arial", 8), Brushes.Black, xOffset + (yLabels.Length * (barWidth * 2.3f)) - 10, this.Height - 55);
+            e.Graphics.DrawString(">140", new Font("Arial", 10), Brushes.Black, xOffset + (yLabels.Length * (barWidth * 2.3f)) - 10, this.Height - 55);
 
-            // Рисуем столбцы
+            // Рисуем основные и промежуточные столбцы
             for (int i = 0; i < data.Length; i++)
             {
+                //Debug.WriteLine($"data i: {data[i]}");
                 float barHeight = data[i] * scaleFactor * heightMultiplier; // Высота столбца
-                float xPosition = xOffset + i * (barWidth * 2.3f); // Увеличиваем расстояние между столбцами
+                float xPosition = xOffset + i * (barWidth * 1.15f); // Позиция по X для основного столбца
 
-                // Рисуем столбец
-                e.Graphics.FillRectangle(Brushes.Blue, xPosition - barWidth / 2, this.Height - 40 - barHeight - yOffset, barWidth, barHeight);
+                // Рисуем основной столбец
+                if (i % 2 == 0) // Основной столбец
+                {
+                    // Рисуем основной столбец
+                    e.Graphics.FillRectangle(Brushes.Blue, (xPosition - barWidth / 2)+2, this.Height - 40 - barHeight - yOffset, barWidth, barHeight);
 
-                // Рисуем значение над столбцом
-                string valueText = ((int)data[i]).ToString(); // Преобразуем в целое число
-                SizeF textSize = e.Graphics.MeasureString(valueText, new Font("Arial", 10)); // Измеряем размер текста
-                e.Graphics.DrawString(valueText, new Font("Arial", 10), Brushes.Black,
-                    xPosition - textSize.Width / 2,
-                    this.Height - 40 - barHeight - yOffset - textSize.Height - 2); // Рисуем текст
+                    // Рисуем значение над основным столбцом
+                    string valueText = ((int)data[i]).ToString(); // Преобразуем в целое число
+                    SizeF textSize = e.Graphics.MeasureString(valueText, new Font("Arial", 12)); // Измеряем размер текста
+                                                                                                 // Рисуем белый фон под текстом
+                    float textBackgroundWidth = textSize.Width + 4; // Ширина фона с учетом отступов
+                    float textBackgroundHeight = textSize.Height + 2; // Высота фона с учетом отступов
+                    e.Graphics.FillRectangle(Brushes.White, (xPosition - textBackgroundWidth / 2),
+                        this.Height - 40 - barHeight - yOffset - textBackgroundHeight - 2,
+                        textBackgroundWidth, textBackgroundHeight);
+                    e.Graphics.DrawString(valueText, new Font("Arial", 12), Brushes.Black,
+                        (xPosition - textSize.Width / 2)+1,
+                        this.Height - 40 - barHeight - yOffset - textSize.Height - 2); // Рисуем текст
+                }
+                else // Промежуточный столбец
+                {
+                    float intermediateValue = data[i];
+                    float intermediateXPosition = xOffset + i * (barWidth * 1.15f); // Позиция по X для промежуточного столбца
+
+                    // Рисуем промежуточный столбец
+                    e.Graphics.FillRectangle(Brushes.Red, intermediateXPosition - barWidth/2, this.Height - 40 - barHeight - yOffset, barWidth, barHeight);
+
+                    // Рисуем значение над промежуточным столбцом
+                    string intermediateText = ((int)intermediateValue).ToString(); // Преобразуем в целое число
+                    SizeF intermediateTextSize = e.Graphics.MeasureString(intermediateText, new Font("Arial", 12)); // Измеряем размер текста
+                                                                                                                    // Рисуем значение над промежуточным столбцом
+                    e.Graphics.DrawString(intermediateText, new Font("Arial", 12), Brushes.Black,
+                        (intermediateXPosition - intermediateTextSize.Width/2)+1 ,
+                        this.Height - 40 - barHeight - yOffset - intermediateTextSize.Height - 2); // Рисуем текст
+                }
             }
         }
     }
 }
+
 

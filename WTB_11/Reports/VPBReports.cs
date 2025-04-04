@@ -30,7 +30,7 @@ namespace WPB_11.Reports
                 {
                     // Загружаем шаблон отчета
                     report.Load(_reportPath);
-                    Debug.WriteLine("Load");
+                    //Debug.WriteLine("Load");
 
                     if (report.Pages.Count == 0)
                     {
