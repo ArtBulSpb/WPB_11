@@ -4,6 +4,8 @@ using System.Diagnostics;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using System.Windows.Forms;
+using System.Xml.Linq;
 using WPB_11.DataStructures;
 using WPB_11.Device;
 
@@ -14,6 +16,8 @@ namespace WPB_11
         private DeviceConnector _deviceConnector;
         private DevicePackets devicePackets;
 
+        private DataGridView dataGridView;
+
         private System.Windows.Forms.Timer _updateTimer;
 
         public void ShowTabContent(Panel contentPanel, string[] TabNames)
@@ -22,18 +26,18 @@ namespace WPB_11
 
             devicePackets = DevicePackets.Instance();
             _deviceConnector = DeviceConnector.Instance("COM3");
-
             // Инициализация таймера
             _updateTimer = new System.Windows.Forms.Timer();
             _updateTimer.Interval = 1000; // Обновление каждую секунду
             _updateTimer.Tick += UpdateVPBCrane; // Подписка на событие
             _updateTimer.Start(); // Запуск таймера
 
-            devicePackets.VPBCraneProcessed += HandleVPBCraneProcessed;
+            devicePackets.TPCHRProcessed += HandleTPCHRProcessed;
+
 
 
             // Создаем DataGridView для отображения данных
-            DataGridView dataGridView = new DataGridView
+            dataGridView = new DataGridView
             {
                 AutoSizeColumnsMode = DataGridViewAutoSizeColumnsMode.AllCells,
                 AutoSizeRowsMode = DataGridViewAutoSizeRowsMode.AllCells,
@@ -80,7 +84,7 @@ namespace WPB_11
             dataGridView.Columns.Add("Mode", "Режим");
 
             // Пример данных для таблицы
-            for (int i = 1; i <= 10; i++)
+            /*for (int i = 1; i <= 10; i++)
             {
                 dataGridView.Rows.Add(i, DateTime.Now.AddMinutes(-i).ToString("g"),
                     $"{i * 10}", // F1
@@ -96,7 +100,7 @@ namespace WPB_11
                     $"{20 + i}°C", // Темп. ВПБ
                     "Работа" // Режим
                 );
-            }
+            }*/
 
             // Создаем кнопку
             var roundedButton = new DoubleRoundedButton
@@ -107,8 +111,7 @@ namespace WPB_11
                 Dock = DockStyle.None,
                 Margin = new Padding(dataGridView.Width * 2-50, 10, 0, 0) // Установите верхний отступ на 10 пикселей
             };
-
-            roundedButton.LeftButtonClick += (s, e) => MessageBox.Show("Нажата кнопка 'Обновить'!");
+            roundedButton.LeftButtonClick += ReadButtonClick;
             roundedButton.RightButtonClick += (s, e) => MessageBox.Show("Нажата кнопка 'Печать'!");
 
             // Создаем TableLayoutPanel
@@ -137,17 +140,65 @@ namespace WPB_11
 
         private void UpdateVPBCrane(object sender, EventArgs e)
         {
-            Debug.WriteLine("Пишу TabCrane");
+            Debug.WriteLine("Пишу TabShort");
             if (DeviceConnector.Instance().IsConnected)
             {
-                DeviceConnector.Instance().Request(DeviceCommands.RequestVPBCrane);
-                DeviceConnector.Instance().Request(DeviceCommands.RequestDateTime);
+                DeviceConnector.Instance().Request(DeviceCommands.RequestTPCHR);
+
             }
         }
 
-        private void HandleVPBCraneProcessed(VPBCrane.VPBCraneStruct vpbcCrane)
+        private void HandleTPCHRProcessed(VPBCurrType.VPBCurrTypeStruct[] TPCHR)
         {
-            Debug.WriteLine("HandleVPBCraneProcessed tabLong вызван"); // Отладочное сообщение
+            Debug.WriteLine("HandleTPCHRProcessed tabShort вызван"); 
+            if (dataGridView.InvokeRequired)
+            {
+                dataGridView.Invoke(new Action<VPBCurrType.VPBCurrTypeStruct[]>(HandleTPCHRProcessed), TPCHR);
+            }
+            else
+            {
+                long ReadKadrPacket = 0;
+
+                for (int I = 0; I < TPCHR.Length; I++)
+                {
+                    var sensorData = TPCHR[I];
+
+                    // Проверка значений
+                    if (sensorData.CurrForce1 == 0 && sensorData.CurrForce2 == 0)
+                    {
+                        Debug.WriteLine($"Значения для индекса {I} равны 0.");
+                    }
+
+                    // Добавляем новую строку в DataGridView
+                    dataGridView.Rows.Add(
+                        I + ReadKadrPacket * 10,
+                        $"{sensorData.DTT.Year}-{sensorData.DTT.Month}-{sensorData.DTT.Date} {sensorData.DTT.Hour}:{sensorData.DTT.Minute}:{sensorData.DTT.Second}",
+                        sensorData.CurrForce1,
+                        sensorData.CurrForce2,
+                        "N/A",
+                        sensorData.CurrQ1,
+                        sensorData.CurrQ2,
+                        "N/A",
+                        sensorData.CurrPercent1,
+                        sensorData.CurrPercent2,
+                        "N/A",
+                        sensorData.CurrWind,
+                        sensorData.Temperature,
+                        sensorData.SetupMode ? "Настройка" : "Работа"
+                    );
+                }
+
+                if (ReadKadrPacket < 544)
+                {
+                    ReadKadrPacket++;
+                }
+            }
+        }
+
+        private void ReadButtonClick(object sender, EventArgs e)
+        {
+            Debug.WriteLine("ReadButtonClick tabshort");
+
             
         }
     }

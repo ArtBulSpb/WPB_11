@@ -17,6 +17,9 @@ namespace WPB_11.Device
         public static readonly byte[] RequestVPBCrane = new byte[5] { 0x3F, 0x00, 0x01, 0x03, 0x3D }; //запрос все про прибор и кран (VPBCrane)
         public static readonly byte[] RequestTPP = new byte[5] { 0x3F, 0x00, 0x01, 0x04, 0x3A }; //Запрос на TPPoint и TPSize(TPInfo) 
         public static readonly byte[] SetDeviceNumber = new byte[5] { 0x3F, 0x00, 0x01, 0x04, 0x3A }; //установить номер прибора 3F 00 0C 05 …data 11 bytes…. KC
+        public static readonly byte[] RequestTPCHR = CreateRequestTPCHR(); // Запрос TPCHR
+
+
         //public static readonly byte[] SetCraneMark = CreateSetCraneMark(); // установить марку крана
         //public static readonly byte[] SetCraneNumber = CreateSetCraneNumber(); // установить номер крана
 
@@ -118,6 +121,31 @@ namespace WPB_11.Device
                 checksum ^= sendData[i];
             }
             sendData[15] = checksum;
+
+            return sendData;
+        }
+
+        public static byte[] CreateRequestTPCHR()
+        {
+            byte[] sendData = new byte[12];
+            int ReadKadrPacket = 0;
+
+            sendData[0] = 0x3F;
+            sendData[1] = 0x00;
+            sendData[2] = 0x06;
+            sendData[3] = 0x1A;
+            sendData[4] = (byte)(ReadKadrPacket * 240 + 271);
+            sendData[5] = (byte)((ReadKadrPacket * 240 + 271) >> 8);
+            sendData[6] = (byte)((ReadKadrPacket * 240 + 271) >> 16);
+            sendData[7] = (byte)((ReadKadrPacket * 240 + 271) >> 24);
+            sendData[8] = 0xF0;
+            sendData[9] = 0;
+
+            // Вычисление контрольной суммы
+            for (int i = 0; i < 9; i++)
+            {
+                sendData[9] ^= sendData[i];
+            }
 
             return sendData;
         }

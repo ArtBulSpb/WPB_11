@@ -208,7 +208,13 @@ namespace WPB_11.Device
                     _devicePackets.ProcessVPBCrane(packetData);
                     break;
 
+                case 26:
+                    Debug.WriteLine($"ProcessTPCHRPacket");
+                    _devicePackets.ProcessTPCHRPacket(packetData);
+                    break;
+
                 default:
+                    Debug.WriteLine($"packetId {packetId}");
                     OnDeviceConnected?.Invoke("Неизвестный тип пакета.");
                     break;
             }

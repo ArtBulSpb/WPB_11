@@ -99,7 +99,7 @@ namespace WPB_11
                 if (i % 2 == 0) // Основной столбец
                 {
                     // Рисуем основной столбец
-                    e.Graphics.FillRectangle(Brushes.Blue, (xPosition - barWidth / 2)+2, this.Height - 40 - barHeight - yOffset, barWidth, barHeight);
+                    e.Graphics.FillRectangle(Brushes.Green, (xPosition - barWidth / 2)+2, this.Height - 40 - barHeight - yOffset, barWidth, barHeight);
 
                     // Рисуем значение над основным столбцом
                     string valueText = ((int)data[i]).ToString(); // Преобразуем в целое число
@@ -120,7 +120,7 @@ namespace WPB_11
                     float intermediateXPosition = xOffset + i * (barWidth * 1.15f); // Позиция по X для промежуточного столбца
 
                     // Рисуем промежуточный столбец
-                    e.Graphics.FillRectangle(Brushes.Red, intermediateXPosition - barWidth/2, this.Height - 40 - barHeight - yOffset, barWidth, barHeight);
+                    e.Graphics.FillRectangle(Brushes.Green, intermediateXPosition - barWidth/2, this.Height - 40 - barHeight - yOffset, barWidth, barHeight);
 
                     // Рисуем значение над промежуточным столбцом
                     string intermediateText = ((int)intermediateValue).ToString(); // Преобразуем в целое число

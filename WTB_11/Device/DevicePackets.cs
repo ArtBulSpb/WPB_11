@@ -20,6 +20,7 @@ namespace WPB_11.Device
         private static DevicePackets _instance;
         public event Action<VPBCurrType.VPBCurrTypeStruct> DateTimeProcessed;
         public event Action<VPBCrane.VPBCraneStruct> VPBCraneProcessed;
+        public event Action<VPBCurrType.VPBCurrTypeStruct[]> TPCHRProcessed;
 
         DateTime HighDateTime = new DateTime(1800, 01, 01, 0, 0, 0);
         DateTime LowDateTime = new DateTime(2400, 01, 01, 0, 0, 0);
@@ -258,7 +259,7 @@ namespace WPB_11.Device
             VPBCraneProcessed?.Invoke(rp.VPBCrane);
         }
 
-        public void ProcessEEPROMPacket(byte[] packetData)
+        public void ProcessTPCHRPacket(byte[] packetData)
         {
             Debug.WriteLine($"ProcessEEPROMPacket вызван {BitConverter.ToString(packetData)}");
 
@@ -273,37 +274,7 @@ namespace WPB_11.Device
                 {
                     TempTPCHRKadr[j] = (byte)packetData[5 + I * 24 + j];
                 }
-                //rp.TPCHR[I + ReadKadrPacket * 10] = new VPBCurrType.VPBCurrTypeStruct(TempTPCHRKadr);   ?
-
-                /*MemTableEh1.Insert();
-
-                MemTableEh1.FieldValues["Index"] = I + ReadKadrPacket * 10;
-                MemTableEh1.FieldValues["DateTime"] = VPBDateTimeToDateTime(
-                    RP.TPCHR[I + ReadKadrPacket * 10].DTT.Date,
-                    RP.TPCHR[I + ReadKadrPacket * 10].DTT.Month,
-                    RP.TPCHR[I + ReadKadrPacket * 10].DTT.Year,
-                    RP.TPCHR[I + ReadKadrPacket * 10].DTT.Hour,
-                    RP.TPCHR[I + ReadKadrPacket * 10].DTT.Minute,
-                    RP.TPCHR[I + ReadKadrPacket * 10].DTT.Second
-                );*/
-
-                /*MemTableEh1.FieldValues["Temperature"] =
-                    $"{RP.TPCHR[I + ReadKadrPacket * 10].DTT.Temperature_H}," +
-                    $"{(RP.TPCHR[I + ReadKadrPacket * 10].DTT.Temperature_L >> 6) * 25}°C";
-
-                MemTableEh1.FieldValues["F1"] = RP.TPCHR[I + ReadKadrPacket * 10].CurrForce1; // Right
-                MemTableEh1.FieldValues["F2"] = RP.TPCHR[I + ReadKadrPacket * 10].CurrForce2;
-                MemTableEh1.FieldValues["Q1"] = RP.TPCHR[I + ReadKadrPacket * 10].CurrQ1;
-                MemTableEh1.FieldValues["Q2"] = RP.TPCHR[I + ReadKadrPacket * 10].CurrQ2;
-                MemTableEh1.FieldValues["M1"] = RP.TPCHR[I + ReadKadrPacket * 10].CurrPercent1;
-                MemTableEh1.FieldValues["M2"] = RP.TPCHR[I + ReadKadrPacket * 10].CurrPercent2;
-                MemTableEh1.FieldValues["Wind"] = RP.TPCHR[I + ReadKadrPacket * 10].CurrWind;
-                MemTableEh1.FieldValues["Error"] = RP.TPCHR[I + ReadKadrPacket * 10].SetupModeAndErrors & 127;
-
-                MemTableEh1.FieldValues["Status"] =
-                    (RP.TPCHR[I + ReadKadrPacket * 10].SetupModeAndErrors >> 7) == 0
-                        ? "Работа"
-                        : "Настройка";*/
+                rp.TPCHR[I + ReadKadrPacket * 10] = new VPBCurrType.VPBCurrTypeStruct(TempTPCHRKadr);   
 
                 // Определим начальную и конечную дату
                 var TempDateTime = new VPBDateTimeTemp.VPBDateTimeTempStruct
@@ -330,48 +301,58 @@ namespace WPB_11.Device
                 }
             }
 
-            /*if (ReadKadrPacket < 544 && Button8.Tag != 0) // 271
+
+            if (ReadKadrPacket < 544) 
             {
                 ReadKadrPacket++;
+            }
 
-                ProgressBar1.Position = ReadKadrPacket;
-                SendData[0] = 0x3F;
-                SendData[1] = 0x00;
-                SendData[2] = 0x06;
-                SendData[3] = 0x1A;
-                SendData[4] = (byte)(ReadKadrPacket * 240 + 271);
-                SendData[5] = (byte)((ReadKadrPacket * 240 + 271) >> 8);
-                SendData[6] = (byte)((ReadKadrPacket * 240 + 271) >> 16);
-                SendData[7] = (byte)((ReadKadrPacket * 240 + 271) >> 24);
-                SendData[8] = 0xF0;
-                SendData[9] = 0;
-
-                for (int i = 0; i < 9; i++)
-                {
-                    SendData[9] ^= SendData[i]; // XOR для контрольной суммы
-                }
-
-                ActiveDataPacket(2);
-                try
-                {
-                    nrComm1.SendData(SendData, 10); // Успех
-                }
-                catch
-                {
-                    // Если произошла ошибка, возвращаемся к началу
-                    Timer1.Enabled = true; // Включаем таймер
-                    return; // Выходим из метода
-                }
+            if (TPCHRProcessed != null)
+            {
+                TPCHRProcessed.Invoke(rp.TPCHR);
             }
             else
             {
-                Button8.Tag = 0; // Снимаем флаг "читаю тпчр"
-                Button8.Enabled = true;
-                ProgressBar1.Position = 0;
-                ProgressBar1.Visible = false;
-                MainForm.MemTableEh1.Post();
-                ActiveDataPacket(0);
-            }*/
+                Debug.WriteLine("На событие TPCHRProcessed никто не подписан.");
+            }
+            /*ProgressBar1.Position = ReadKadrPacket;
+            SendData[0] = 0x3F;
+            SendData[1] = 0x00;
+            SendData[2] = 0x06;
+            SendData[3] = 0x1A;
+            SendData[4] = (byte)(ReadKadrPacket * 240 + 271);
+            SendData[5] = (byte)((ReadKadrPacket * 240 + 271) >> 8);
+            SendData[6] = (byte)((ReadKadrPacket * 240 + 271) >> 16);
+            SendData[7] = (byte)((ReadKadrPacket * 240 + 271) >> 24);
+            SendData[8] = 0xF0;
+            SendData[9] = 0;
+
+            for (int i = 0; i < 9; i++)
+            {
+                SendData[9] ^= SendData[i]; // XOR для контрольной суммы
+            }
+
+            ActiveDataPacket(2);
+            try
+            {
+                nrComm1.SendData(SendData, 10); // Успех
+            }
+            catch
+            {
+                // Если произошла ошибка, возвращаемся к началу
+                Timer1.Enabled = true; // Включаем таймер
+                return; // Выходим из метода
+            }
+        }
+        else
+        {
+            Button8.Tag = 0; // Снимаем флаг "читаю тпчр"
+            Button8.Enabled = true;
+            ProgressBar1.Position = 0;
+            ProgressBar1.Visible = false;
+            MainForm.MemTableEh1.Post();
+            ActiveDataPacket(0);
+        }*/
         }
 
 
