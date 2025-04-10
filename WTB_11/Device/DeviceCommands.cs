@@ -17,7 +17,6 @@ namespace WPB_11.Device
         public static readonly byte[] RequestVPBCrane = new byte[5] { 0x3F, 0x00, 0x01, 0x03, 0x3D }; //запрос все про прибор и кран (VPBCrane)
         public static readonly byte[] RequestTPP = new byte[5] { 0x3F, 0x00, 0x01, 0x04, 0x3A }; //Запрос на TPPoint и TPSize(TPInfo) 
         public static readonly byte[] SetDeviceNumber = new byte[5] { 0x3F, 0x00, 0x01, 0x04, 0x3A }; //установить номер прибора 3F 00 0C 05 …data 11 bytes…. KC
-        public static readonly byte[] RequestTPCHR = CreateRequestTPCHR(); // Запрос TPCHR
 
 
         //public static readonly byte[] SetCraneMark = CreateSetCraneMark(); // установить марку крана
@@ -125,10 +124,9 @@ namespace WPB_11.Device
             return sendData;
         }
 
-        public static byte[] CreateRequestTPCHR()
+        public static byte[] CreateRequestTPCHR(int ReadKadrPacket)
         {
             byte[] sendData = new byte[12];
-            int ReadKadrPacket = 0;
 
             sendData[0] = 0x3F;
             sendData[1] = 0x00;

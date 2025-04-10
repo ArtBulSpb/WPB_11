@@ -26,6 +26,9 @@ namespace WPB_11.Device
         DateTime HighDateTime = new DateTime(1800, 01, 01, 0, 0, 0);
         DateTime LowDateTime = new DateTime(2400, 01, 01, 0, 0, 0);
 
+        private bool isUpdatingTable = false;
+
+
         public static DevicePackets Instance()
         {
             if (_instance == null)
@@ -260,48 +263,47 @@ namespace WPB_11.Device
             VPBCraneProcessed?.Invoke(rp.VPBCrane);
         }
 
+        private RequestQueue requestQueue = new RequestQueue();
+
         public void ProcessTPCHRPacket(byte[] packetData)
         {
-            Debug.WriteLine($"ProcessEEPROMPacket вызван {BitConverter.ToString(packetData)}");
+            Debug.WriteLine($"ProcessTPCHRPacket вызван {BitConverter.ToString(packetData)}");
+            if (isUpdatingTable) return; // Если уже обновляется, выходим
 
+            isUpdatingTable = true;
             RP.RPStruct rp = new RP.RPStruct();
             rp.TPCHR = new VPBCurrType.VPBCurrTypeStruct[5449];
 
             var TempTPCHRKadr = new byte[24];
             int ReadKadrPacket = 0;
 
-            for (int I = 0; I < 10; I++)
+            while (ReadKadrPacket < 544)
             {
-                for (int j = 0; j < 24; j++)
+                for (int I = 0; I < 10; I++)
                 {
-                    TempTPCHRKadr[j] = (byte)packetData[4 + I * 24 + j];
+                    for (int j = 0; j < 24; j++)
+                    {
+                        TempTPCHRKadr[j] = (byte)packetData[4 + I * 24 + j];
+                    }
+
+                    int index = I + ReadKadrPacket * 10;
+
+                    if (index >= rp.TPCHR.Length)
+                    {
+                        break; // или завершите обработку
+                    }
+                    rp.TPCHR[index] = new VPBCurrType.VPBCurrTypeStruct(TempTPCHRKadr);
                 }
 
-                int index = I + ReadKadrPacket * 10;
-
-                if (index >= rp.TPCHR.Length)
-                {
-                    break; // или завершите обработку
-                }
-                rp.TPCHR[index] = new VPBCurrType.VPBCurrTypeStruct(TempTPCHRKadr);
-            }
-
-
-            if (ReadKadrPacket < 544) 
-            {
+                // Добавляем запрос в очередь
+                requestQueue.Enqueue(ReadKadrPacket);
                 ReadKadrPacket++;
             }
-
-            if (TPCHRProcessed != null)
-            {
-                TPCHRProcessed.Invoke(rp.TPCHR);
-            }
-            else
-            {
-                Debug.WriteLine("На событие TPCHRProcessed никто не подписан.");
-            }
-            
+            isUpdatingTable = false;
+            // Обработка события
+            TPCHRProcessed?.Invoke(rp.TPCHR);
         }
+
 
 
 

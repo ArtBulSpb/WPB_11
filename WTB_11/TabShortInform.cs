@@ -18,7 +18,6 @@ namespace WPB_11
 
         private DataGridView dataGridView;
 
-        private System.Windows.Forms.Timer _updateTimer;
 
         public void ShowTabContent(Panel contentPanel, string[] TabNames)
         {
@@ -76,25 +75,6 @@ namespace WPB_11
             dataGridView.Columns.Add("TempVPB", "Темп. ВПБ");
             dataGridView.Columns.Add("Mode", "Режим");
 
-            // Пример данных для таблицы
-            /*for (int i = 1; i <= 10; i++)
-            {
-                dataGridView.Rows.Add(i, DateTime.Now.AddMinutes(-i).ToString("g"),
-                    $"{i * 10}", // F1
-                    $"{i * 15}", // F2
-                    $"{i * 20}", // F3
-                    $"{i * 5}Кг",  // Q1
-                    $"{i * 7}Кг",  // Q2
-                    $"{i * 9}Кг",  // Q3
-                    $"{i * 100}%", // M1
-                    $"{i * 120}%", // M2
-                    $"{i * 140}%", // M3
-                    $"{i * 2}m/s", // Ветер
-                    $"{20 + i}°C", // Темп. ВПБ
-                    "Работа" // Режим
-                );
-            }*/
-
             // Создаем кнопку
             var roundedButton = new DoubleRoundedButton
             {
@@ -145,13 +125,13 @@ namespace WPB_11
                 if (TPCHR == null || TPCHR.Length == 0)
                 {
                     Debug.WriteLine("Массив TPCHR пуст или равен null.");
-                    return; // Завершаем выполнение метода
+                    return; 
                 }
 
                 long ReadKadrPacket = 0;
                 dataGridView.Rows.Clear();
 
-                for (int I = 0; I < 10; I++)
+                for (int I = 0; I < TPCHR.Length; I++)
                 {
                     var sensorData = TPCHR[I];
 
@@ -175,15 +155,11 @@ namespace WPB_11
                         sensorData.CurrPercent2,
                         "N/A",
                         sensorData.CurrWind,
-                        sensorData.Temperature,
+                        sensorData.Temperature, 
                         sensorData.SetupMode ? "Настройка" : "Работа"
                     );
                 }
 
-                if (ReadKadrPacket < 544)
-                {
-                    ReadKadrPacket++;
-                }
             }
         }
 
@@ -192,8 +168,7 @@ namespace WPB_11
             Debug.WriteLine("ReadButtonClick tabshort");
             if (DeviceConnector.Instance().IsConnected)
             {
-                DeviceConnector.Instance().Request(DeviceCommands.RequestTPCHR);
-
+                DeviceConnector.Instance().Request(DeviceCommands.CreateRequestTPCHR(0));
             }
         }
     }

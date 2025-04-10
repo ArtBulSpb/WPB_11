@@ -56,7 +56,6 @@ namespace WPB_11.DataStructures
                 //CurrPercent1 = packetData[24];
                 //CurrPercent2 = packetData[25];
 
-                ///////////////////////////////////////////////////////////////////////////////////////////////////
 
                 // Вычисление суммарного усилия с обработкой переполнения
                 if (CurrForce1 != 0 && CurrForce2 != 0)
