@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -32,24 +33,30 @@ namespace WPB_11.DataStructures
             // Конструктор, который принимает массив байтов
             public VPBCurrTypeStruct(byte[] packetData)
             {
+                if (packetData.Length < 28)
+                {
+                    Debug.WriteLine($"VPBCurrTypeStruct конструктор {BitConverter.ToString(packetData)}");
+                    //throw new ArgumentException("Недостаточная длина packetData. Ожидалось минимум 28 байт.");
+                }
+
                 DTT = new VPBDateTimeTempStruct
                 {
-                    Hour = BCDToDecimal(packetData[4]),    // Час
-                    Minute = BCDToDecimal(packetData[5]),  // Минуты
-                    Second = BCDToDecimal(packetData[6]),    // Секунды
-                    Date = BCDToDecimal(packetData[7]),   // День
-                    Month = BCDToDecimal(packetData[8]),  // Месяц
-                    Year = BCDToDecimal(packetData[9]),   // Год  
-                    Temperature_H = packetData[10], // Пример, если температура в байте 10
-                    Temperature_L = packetData[11]  // Пример, если температура в байте 11
+                    Hour = BCDToDecimal(packetData[0]),    // Час
+                    Minute = BCDToDecimal(packetData[1]),  // Минуты
+                    Second = BCDToDecimal(packetData[2]),    // Секунды
+                    Date = BCDToDecimal(packetData[3]),   // День
+                    Month = BCDToDecimal(packetData[4]),  // Месяц
+                    Year = BCDToDecimal(packetData[5]),   // Год  
                 };
 
                 CurrForce1 = BitConverter.ToUInt16(new byte[] { packetData[12], packetData[13] }, 0);
                 CurrForce2 = BitConverter.ToUInt16(new byte[] { packetData[14], packetData[15] }, 0);
                 CurrQ1 = BitConverter.ToInt32(packetData, 16);
                 CurrQ2 = BitConverter.ToInt32(packetData, 20);
-                CurrPercent1 = packetData[24];
-                CurrPercent2 = packetData[25];
+                //CurrPercent1 = packetData[24];
+                //CurrPercent2 = packetData[25];
+
+                ///////////////////////////////////////////////////////////////////////////////////////////////////
 
                 // Вычисление суммарного усилия с обработкой переполнения
                 if (CurrForce1 != 0 && CurrForce2 != 0)
@@ -64,35 +71,20 @@ namespace WPB_11.DataStructures
                 }
 
                 // Добавляем режим настройки
-                SetupMode = (packetData[27] & 128) != 0; // Режим настройки
+                //SetupMode = (packetData[27] & 128) != 0; // Режим настройки
 
                 // Добавляем ошибки
-                byte value = (byte)(packetData[27] & 127);
-                Errors = value.ToString();
+                //byte value = (byte)(packetData[27] & 127);
+                Errors = "";
 
                 // Добавляем температуру
-                string value1 = packetData[10].ToString();
-                float value2 = ((float)(packetData[11] >> 6) * 25);
+                string value1 = packetData[6].ToString();
+                float value2 = ((float)(packetData[7] >> 6) * 25);
                 Temperature = $"{value1},{value2}";
 
                 // Добавляем силу ветра
-                WindForce = (byte)(packetData[26] / 10); // Сила ветра
+                //WindForce = (byte)(packetData[26] / 10); // Сила ветра
 
-                // Датчики
-                SensorNumbers = new byte[4];
-                Efforts = new byte[4];
-
-                // Получение номеров датчиков
-                for (int i = 0; i < 4; i++)
-                {
-                    SensorNumbers[i] = packetData[17 + i]; // номера датчиков
-                }
-
-                // Получение усилия
-                for (int i = 0; i < 4; i++)
-                {
-                    Efforts[i] = packetData[21 + i]; // усилие
-                }
             }
 
             private int BCDToDecimal(byte bcd)

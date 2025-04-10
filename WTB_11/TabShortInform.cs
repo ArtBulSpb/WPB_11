@@ -26,15 +26,8 @@ namespace WPB_11
 
             devicePackets = DevicePackets.Instance();
             _deviceConnector = DeviceConnector.Instance("COM3");
-            // Инициализация таймера
-            _updateTimer = new System.Windows.Forms.Timer();
-            _updateTimer.Interval = 1000; // Обновление каждую секунду
-            _updateTimer.Tick += UpdateVPBCrane; // Подписка на событие
-            _updateTimer.Start(); // Запуск таймера
-
+            
             devicePackets.TPCHRProcessed += HandleTPCHRProcessed;
-
-
 
             // Создаем DataGridView для отображения данных
             dataGridView = new DataGridView
@@ -138,15 +131,7 @@ namespace WPB_11
             contentPanel.Controls.Add(layoutPanel);
         }
 
-        private void UpdateVPBCrane(object sender, EventArgs e)
-        {
-            Debug.WriteLine("Пишу TabShort");
-            if (DeviceConnector.Instance().IsConnected)
-            {
-                DeviceConnector.Instance().Request(DeviceCommands.RequestTPCHR);
-
-            }
-        }
+        
 
         private void HandleTPCHRProcessed(VPBCurrType.VPBCurrTypeStruct[] TPCHR)
         {
@@ -157,9 +142,16 @@ namespace WPB_11
             }
             else
             {
-                long ReadKadrPacket = 0;
+                if (TPCHR == null || TPCHR.Length == 0)
+                {
+                    Debug.WriteLine("Массив TPCHR пуст или равен null.");
+                    return; // Завершаем выполнение метода
+                }
 
-                for (int I = 0; I < TPCHR.Length; I++)
+                long ReadKadrPacket = 0;
+                dataGridView.Rows.Clear();
+
+                for (int I = 0; I < 10; I++)
                 {
                     var sensorData = TPCHR[I];
 
@@ -172,7 +164,7 @@ namespace WPB_11
                     // Добавляем новую строку в DataGridView
                     dataGridView.Rows.Add(
                         I + ReadKadrPacket * 10,
-                        $"{sensorData.DTT.Year}-{sensorData.DTT.Month}-{sensorData.DTT.Date} {sensorData.DTT.Hour}:{sensorData.DTT.Minute}:{sensorData.DTT.Second}",
+                        $"{sensorData.DTT.Date}.{sensorData.DTT.Month}.{sensorData.DTT.Year} {sensorData.DTT.Hour}:{sensorData.DTT.Minute}:{sensorData.DTT.Second}",
                         sensorData.CurrForce1,
                         sensorData.CurrForce2,
                         "N/A",
@@ -198,8 +190,11 @@ namespace WPB_11
         private void ReadButtonClick(object sender, EventArgs e)
         {
             Debug.WriteLine("ReadButtonClick tabshort");
+            if (DeviceConnector.Instance().IsConnected)
+            {
+                DeviceConnector.Instance().Request(DeviceCommands.RequestTPCHR);
 
-            
+            }
         }
     }
 }

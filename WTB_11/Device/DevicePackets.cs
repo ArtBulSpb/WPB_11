@@ -4,6 +4,7 @@ using System.Diagnostics;
 using System.Linq;
 using System.Net.Http.Headers;
 using System.Net.Sockets;
+using System.Reflection;
 using System.Text;
 using System.Threading.Tasks;
 using System.Xml.Linq;
@@ -265,40 +266,24 @@ namespace WPB_11.Device
 
             RP.RPStruct rp = new RP.RPStruct();
             rp.TPCHR = new VPBCurrType.VPBCurrTypeStruct[5449];
+
             var TempTPCHRKadr = new byte[24];
-            long ReadKadrPacket = 0;
+            int ReadKadrPacket = 0;
 
             for (int I = 0; I < 10; I++)
             {
                 for (int j = 0; j < 24; j++)
                 {
-                    TempTPCHRKadr[j] = (byte)packetData[5 + I * 24 + j];
-                }
-                rp.TPCHR[I + ReadKadrPacket * 10] = new VPBCurrType.VPBCurrTypeStruct(TempTPCHRKadr);   
-
-                // Определим начальную и конечную дату
-                var TempDateTime = new VPBDateTimeTemp.VPBDateTimeTempStruct
-                {
-                    Hour = BCDToDecimal((byte)(rp.TPCHR[I + ReadKadrPacket * 10].DTT.Hour)),
-                    Minute = BCDToDecimal((byte)(rp.TPCHR[I + ReadKadrPacket * 10].DTT).Minute),
-                    Second = BCDToDecimal((byte)(rp.TPCHR[I + ReadKadrPacket * 10].DTT).Second),
-                    Date = BCDToDecimal((byte)(rp.TPCHR[I + ReadKadrPacket * 10].DTT).Date),
-                    Month = BCDToDecimal((byte)(rp.TPCHR[I + ReadKadrPacket * 10].DTT).Month),
-                    Year = BCDToDecimal((byte)(rp.TPCHR[I + ReadKadrPacket * 10].DTT).Year)
-                };
-
-                DateTime tempDateTimeAsDateTime = ToDateTime(TempDateTime);
-                if (tempDateTimeAsDateTime > HighDateTime)
-                {
-                    HighDateTime = tempDateTimeAsDateTime;
-                    var HighDateTimeIndex = I + ReadKadrPacket * 10;
+                    TempTPCHRKadr[j] = (byte)packetData[4 + I * 24 + j];
                 }
 
-                if (tempDateTimeAsDateTime < LowDateTime)
+                int index = I + ReadKadrPacket * 10;
+
+                if (index >= rp.TPCHR.Length)
                 {
-                    LowDateTime = tempDateTimeAsDateTime;
-                    var HighDateTimeIndex = I + ReadKadrPacket * 10;
+                    break; // или завершите обработку
                 }
+                rp.TPCHR[index] = new VPBCurrType.VPBCurrTypeStruct(TempTPCHRKadr);
             }
 
 
@@ -315,44 +300,7 @@ namespace WPB_11.Device
             {
                 Debug.WriteLine("На событие TPCHRProcessed никто не подписан.");
             }
-            /*ProgressBar1.Position = ReadKadrPacket;
-            SendData[0] = 0x3F;
-            SendData[1] = 0x00;
-            SendData[2] = 0x06;
-            SendData[3] = 0x1A;
-            SendData[4] = (byte)(ReadKadrPacket * 240 + 271);
-            SendData[5] = (byte)((ReadKadrPacket * 240 + 271) >> 8);
-            SendData[6] = (byte)((ReadKadrPacket * 240 + 271) >> 16);
-            SendData[7] = (byte)((ReadKadrPacket * 240 + 271) >> 24);
-            SendData[8] = 0xF0;
-            SendData[9] = 0;
-
-            for (int i = 0; i < 9; i++)
-            {
-                SendData[9] ^= SendData[i]; // XOR для контрольной суммы
-            }
-
-            ActiveDataPacket(2);
-            try
-            {
-                nrComm1.SendData(SendData, 10); // Успех
-            }
-            catch
-            {
-                // Если произошла ошибка, возвращаемся к началу
-                Timer1.Enabled = true; // Включаем таймер
-                return; // Выходим из метода
-            }
-        }
-        else
-        {
-            Button8.Tag = 0; // Снимаем флаг "читаю тпчр"
-            Button8.Enabled = true;
-            ProgressBar1.Position = 0;
-            ProgressBar1.Visible = false;
-            MainForm.MemTableEh1.Post();
-            ActiveDataPacket(0);
-        }*/
+            
         }
 
 
