@@ -58,7 +58,6 @@ namespace WPB_11
             dataGridView.DefaultCellStyle.Font = FontManager.GetRegularFont(10);
             dataGridView.ColumnHeadersDefaultCellStyle.Font = FontManager.GetSemiBoldFont(12);
 
-
             // Настраиваем столбцы
             dataGridView.Columns.Add("Index", "№");
             dataGridView.Columns.Add("DateTime", "Дата/время");
@@ -74,6 +73,11 @@ namespace WPB_11
             dataGridView.Columns.Add("Wind", "Ветер");
             dataGridView.Columns.Add("TempVPB", "Темп. ВПБ");
             dataGridView.Columns.Add("Mode", "Режим");
+
+            foreach (DataGridViewColumn column in dataGridView.Columns)
+            {
+                column.SortMode = DataGridViewColumnSortMode.Automatic; // Включаем автоматическую сортировку
+            }
 
             // Создаем кнопку
             var roundedButton = new DoubleRoundedButton
@@ -111,57 +115,54 @@ namespace WPB_11
             contentPanel.Controls.Add(layoutPanel);
         }
 
-        
+
 
         private void HandleTPCHRProcessed(VPBCurrType.VPBCurrTypeStruct[] TPCHR)
         {
-            Debug.WriteLine("HandleTPCHRProcessed tabShort вызван"); 
+            Debug.WriteLine("HandleTPCHRProcessed tabShort вызван");
+
             if (dataGridView.InvokeRequired)
             {
                 dataGridView.Invoke(new Action<VPBCurrType.VPBCurrTypeStruct[]>(HandleTPCHRProcessed), TPCHR);
+                return;
             }
-            else
+
+            if (TPCHR == null || TPCHR.Length == 0)
             {
-                if (TPCHR == null || TPCHR.Length == 0)
-                {
-                    Debug.WriteLine("Массив TPCHR пуст или равен null.");
-                    return; 
-                }
+                Debug.WriteLine("Массив TPCHR пуст или равен null.");
+                return;
+            }
 
-                long ReadKadrPacket = 0;
-                dataGridView.Rows.Clear();
+            // Очищаем DataGridView
+            dataGridView.Rows.Clear();
+            int i = 1;
 
-                for (int I = 0; I < TPCHR.Length; I++)
-                {
-                    var sensorData = TPCHR[I];
-
-                    // Проверка значений
-                    if (sensorData.CurrForce1 == 0 && sensorData.CurrForce2 == 0)
-                    {
-                        Debug.WriteLine($"Значения для индекса {I} равны 0.");
-                    }
-
-                    // Добавляем новую строку в DataGridView
-                    dataGridView.Rows.Add(
-                        I + ReadKadrPacket * 10,
-                        $"{sensorData.DTT.Date}.{sensorData.DTT.Month}.{sensorData.DTT.Year} {sensorData.DTT.Hour}:{sensorData.DTT.Minute}:{sensorData.DTT.Second}",
-                        sensorData.CurrForce1,
-                        sensorData.CurrForce2,
-                        "N/A",
-                        sensorData.CurrQ1,
-                        sensorData.CurrQ2,
-                        "N/A",
-                        sensorData.CurrPercent1,
-                        sensorData.CurrPercent2,
-                        "N/A",
-                        sensorData.CurrWind,
-                        sensorData.Temperature, 
-                        sensorData.SetupMode ? "Настройка" : "Работа"
-                    );
-                }
-
+            // Добавляем строки по одной
+            foreach (var sensorData in TPCHR)
+            {
+                dataGridView.Rows.Add(
+                    // Заполните здесь ваши данные
+                    i, // Например, индекс
+                    $"{sensorData.DTT.Date}.{sensorData.DTT.Month}.{sensorData.DTT.Year} {sensorData.DTT.Hour}:{sensorData.DTT.Minute}:{sensorData.DTT.Second}",
+                    sensorData.CurrForce1,
+                    sensorData.CurrForce2,
+                    "N/A",
+                    sensorData.CurrQ1,
+                    sensorData.CurrQ2,
+                    "N/A",
+                    sensorData.CurrPercent1,
+                    sensorData.CurrPercent2,
+                    "N/A",
+                    sensorData.CurrWind,
+                    sensorData.Temperature,
+                    sensorData.SetupMode ? "Настройка" : "Работа"
+                );
+                i++;
+                // Вызовите метод для обновления интерфейса, если необходимо
+                Application.DoEvents(); // Это позволит обновить интерфейс
             }
         }
+
 
         private void ReadButtonClick(object sender, EventArgs e)
         {
