@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.ComponentModel;
 using System.Diagnostics;
 using System.Linq;
 using System.Text;
@@ -18,6 +19,11 @@ namespace WPB_11
         private DevicePackets devicePackets;
 
         private DataGridView dataGridView;
+        private BindingList<SensorDataRow> displayedRows = new BindingList<SensorDataRow>();
+        private int currentPage = 0;
+        private const int pageSize = 100;
+        private VPBCurrType.VPBCurrTypeStruct[] allTPCHR; // Поле для хранения всех данных
+        private SynchronizationContext syncContext;
 
 
         public void ShowTabContent(Panel contentPanel, string[] TabNames)
@@ -28,8 +34,7 @@ namespace WPB_11
 
             devicePackets = DevicePackets.Instance();
             _deviceConnector = DeviceConnector.Instance("COM3");
-            
-            devicePackets.TPCHRProcessed += HandleTPCHRProcessed;
+            syncContext = SynchronizationContext.Current;
 
             // Создаем DataGridView для отображения данных
             dataGridView = new DataGridView
@@ -60,24 +65,6 @@ namespace WPB_11
             dataGridView.ColumnHeadersDefaultCellStyle.SelectionForeColor = Color.Black; // Цвет текста при выделении заголовков
             dataGridView.DefaultCellStyle.Font = FontManager.GetRegularFont(10);
             dataGridView.ColumnHeadersDefaultCellStyle.Font = FontManager.GetSemiBoldFont(12);
-
-            // Настраиваем столбцы
-            dataGridView.Columns.Add("Index", "№");
-            dataGridView.Columns.Add("DateTime", "Дата/время");
-            dataGridView.Columns.Add("F1", "F1");
-            dataGridView.Columns.Add("F2", "F2");
-            dataGridView.Columns.Add("F3", "F3");
-            dataGridView.Columns.Add("Q1", "Q1");
-            dataGridView.Columns.Add("Q2", "Q2");
-            dataGridView.Columns.Add("Q3", "Q3");
-            dataGridView.Columns.Add("M1", "M1");
-            dataGridView.Columns.Add("M2", "M2");
-            dataGridView.Columns.Add("M3", "M3");
-            dataGridView.Columns.Add("Wind", "Ветер");
-            dataGridView.Columns.Add("TempVPB", "Темп. ВПБ");
-            dataGridView.Columns.Add("Mode", "Режим");
-            Debug.WriteLine("ShowTabContent Columns вызван");
-
 
             // Создаем кнопку
             var roundedButton = new DoubleRoundedButton
@@ -117,47 +104,87 @@ namespace WPB_11
 
 
 
-        private void HandleTPCHRProcessed(VPBCurrType.VPBCurrTypeStruct[] TPCHR)
+        private async void HandleTPCHRProcessed(VPBCurrType.VPBCurrTypeStruct[] TPCHR)
         {
             Debug.WriteLine("HandleTPCHRProcessed tabShort вызван");
 
-            if (dataGridView.InvokeRequired)
+            // Сохраняем все данные для последующего использования
+            allTPCHR = TPCHR;
+
+            // Очищаем текущие отображаемые строки
+            UpdateDataGridView();
+
+            // Запускаем асинхронную загрузку данных
+            await LoadDataAsync();
+        }
+
+
+        private async Task LoadDataAsync()
+        {
+            await Task.Run(() =>
             {
-                dataGridView.Invoke(new Action<VPBCurrType.VPBCurrTypeStruct[]>(HandleTPCHRProcessed), TPCHR);
-                Debug.WriteLine("Вызов метода HandleTPCHRProcessed через Invoke");
-                return;
-            }
-            int i = 1;
-            foreach (var sensorData in TPCHR)
+                int startIndex = currentPage * pageSize;
+                int endIndex = Math.Min((currentPage + 1) * pageSize, allTPCHR.Length);
+
+                for (int i = startIndex; i < endIndex; i++)
+                {
+                    var sensorData = allTPCHR[i];
+                    var rowData = new SensorDataRow
+                    {
+                        Index = (i + 1).ToString(),
+                        DateTime = $"{sensorData.DTT.Date}.{sensorData.DTT.Month}.{sensorData.DTT.Year} {sensorData.DTT.Hour}:{sensorData.DTT.Minute}:{sensorData.DTT.Second}",
+                        F1 = sensorData.CurrForce1.ToString() ?? "N/A",
+                        F2 = sensorData.CurrForce2.ToString() ?? "N/A",
+                        F3 = "N/A",
+                        Q1 = sensorData.CurrQ1.ToString() ?? "N/A",
+                        Q2 = sensorData.CurrQ2.ToString() ?? "N/A",
+                        Q3 = "N/A",
+                        M1 = sensorData.CurrPercent1.ToString() ?? "N/A",
+                        M2 = sensorData.CurrPercent2.ToString() ?? "N/A",
+                        M3 = "N/A",
+                        Wind = sensorData.CurrWind.ToString() ?? "N/A",
+                        TempVPB = sensorData.Temperature ?? "N/A",
+                        Mode = sensorData.SetupMode ? "Настройка" : "Работа"
+                    };
+                    AddToDisplayedRows(rowData);
+                }
+            });
+
+            UpdateDataGridView();
+        }
+
+        private void dataGridView_Scroll(object sender, EventArgs e)
+        {
+            // Получаем доступ к вертикальной прокрутке через родительский контрол
+            var scrollBar = (sender as DataGridView)?.Controls.OfType<VScrollBar>().FirstOrDefault();
+            if (scrollBar != null && scrollBar.Value == scrollBar.Maximum)
             {
-                Debug.WriteLine($"Данные: {sensorData.DTT.Date}.{sensorData.DTT.Month}.{sensorData.DTT.Year} {sensorData.DTT.Hour}:{sensorData.DTT.Minute}:{sensorData.DTT.Second}, F1: {sensorData.CurrForce1}, F2: {sensorData.CurrForce2}, CurrQ1: {sensorData.CurrQ1}, CurrQ2: {sensorData.CurrQ2}, CurrPercent1: {sensorData.CurrPercent1}, CurrPercent2: {sensorData.CurrPercent2}, CurrWind: {sensorData.CurrWind}, Temperature: {sensorData.Temperature}, SetupMode: {sensorData.SetupMode}");
-                try
-                {
-                    dataGridView.Rows.Add(
-                        i.ToString(),
-                        $"{sensorData.DTT.Date}.{sensorData.DTT.Month}.{sensorData.DTT.Year} {sensorData.DTT.Hour}:{sensorData.DTT.Minute}:{sensorData.DTT.Second}",
-                        sensorData.CurrForce1.ToString() ?? "N/A",
-                        sensorData.CurrForce2.ToString() ?? "N/A",
-                        "N/A",
-                        sensorData.CurrQ1.ToString() ?? "N/A",
-                        sensorData.CurrQ2.ToString() ?? "N/A",
-                        "N/A",
-                        sensorData.CurrPercent1.ToString() ?? "N/A",
-                        sensorData.CurrPercent2.ToString() ?? "N/A",
-                        "N/A",
-                        sensorData.CurrWind.ToString() ?? "N/A",
-                        sensorData.Temperature ?? "N/A",
-                        sensorData.SetupMode ? "Настройка" : "Работа"
-                    );
-                }
-                catch (Exception ex)
-                {
-                }
-                i++;
-                Application.DoEvents(); // Обновляет интерфейс после каждой итерации, но вызывает исключение System.InvalidOperationException которое не влияет на работу приложения 
+                currentPage++;
+                LoadDataAsync(); // Загружаем следующую страницу данных
             }
         }
 
+        private void UpdateDataGridView()
+        {
+            if (dataGridView.InvokeRequired)
+            {
+                dataGridView.Invoke(new Action(UpdateDataGridView));
+            }
+            else
+            {
+                dataGridView.DataSource = displayedRows;
+                dataGridView.Columns["Index"].HeaderText = "№";
+                dataGridView.Columns["DateTime"].HeaderText = "Дата/время";
+                dataGridView.Columns["Wind"].HeaderText = "Ветер";
+                dataGridView.Columns["TempVPB"].HeaderText = "Температура";
+                dataGridView.Columns["Mode"].HeaderText = "Режим";
+            }
+        }
+
+        private void AddToDisplayedRows(SensorDataRow rowData)
+        {
+            syncContext.Post(_ => displayedRows.Add(rowData), null);
+        }
 
         private void ReadButtonClick(object sender, EventArgs e)
         {
@@ -165,6 +192,7 @@ namespace WPB_11
             if (DeviceConnector.Instance().IsConnected)
             {
                 DeviceConnector.Instance().Request(DeviceCommands.CreateRequestTPCHR(0));
+                devicePackets.TPCHRProcessed += HandleTPCHRProcessed;
             }
         }
     }
