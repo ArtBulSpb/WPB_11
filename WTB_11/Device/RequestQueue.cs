@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using System.Text;
 using System.Threading;
@@ -42,6 +43,7 @@ namespace WPB_11.Device
                         }
                         request = _requestQueue.Dequeue();
                     }
+                    Debug.WriteLine($"Обработка запроса: {request}");
                     DeviceConnector.Instance().Request(DeviceCommands.CreateRequestTPCHR(request));
                 }
             });

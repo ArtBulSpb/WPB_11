@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using System.Reflection;
 using System.Text;
@@ -126,6 +127,7 @@ namespace WPB_11.Device
 
         public static byte[] CreateRequestTPCHR(int ReadKadrPacket)
         {
+            Debug.WriteLine($"ReadKadrPacket {ReadKadrPacket}");
             byte[] sendData = new byte[12];
 
             sendData[0] = 0x3F;

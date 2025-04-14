@@ -8,6 +8,7 @@ using System.Windows.Forms;
 using System.Xml.Linq;
 using WPB_11.DataStructures;
 using WPB_11.Device;
+using static System.Runtime.InteropServices.JavaScript.JSType;
 
 namespace WPB_11
 {
@@ -21,6 +22,8 @@ namespace WPB_11
 
         public void ShowTabContent(Panel contentPanel, string[] TabNames)
         {
+            
+
             contentPanel.Controls.Clear();
 
             devicePackets = DevicePackets.Instance();
@@ -73,11 +76,8 @@ namespace WPB_11
             dataGridView.Columns.Add("Wind", "Ветер");
             dataGridView.Columns.Add("TempVPB", "Темп. ВПБ");
             dataGridView.Columns.Add("Mode", "Режим");
+            Debug.WriteLine("ShowTabContent Columns вызван");
 
-            foreach (DataGridViewColumn column in dataGridView.Columns)
-            {
-                column.SortMode = DataGridViewColumnSortMode.Automatic; // Включаем автоматическую сортировку
-            }
 
             // Создаем кнопку
             var roundedButton = new DoubleRoundedButton
@@ -124,42 +124,37 @@ namespace WPB_11
             if (dataGridView.InvokeRequired)
             {
                 dataGridView.Invoke(new Action<VPBCurrType.VPBCurrTypeStruct[]>(HandleTPCHRProcessed), TPCHR);
+                Debug.WriteLine("Вызов метода HandleTPCHRProcessed через Invoke");
                 return;
             }
-
-            if (TPCHR == null || TPCHR.Length == 0)
-            {
-                Debug.WriteLine("Массив TPCHR пуст или равен null.");
-                return;
-            }
-
-            // Очищаем DataGridView
-            dataGridView.Rows.Clear();
             int i = 1;
-
-            // Добавляем строки по одной
             foreach (var sensorData in TPCHR)
             {
-                dataGridView.Rows.Add(
-                    // Заполните здесь ваши данные
-                    i, // Например, индекс
-                    $"{sensorData.DTT.Date}.{sensorData.DTT.Month}.{sensorData.DTT.Year} {sensorData.DTT.Hour}:{sensorData.DTT.Minute}:{sensorData.DTT.Second}",
-                    sensorData.CurrForce1,
-                    sensorData.CurrForce2,
-                    "N/A",
-                    sensorData.CurrQ1,
-                    sensorData.CurrQ2,
-                    "N/A",
-                    sensorData.CurrPercent1,
-                    sensorData.CurrPercent2,
-                    "N/A",
-                    sensorData.CurrWind,
-                    sensorData.Temperature,
-                    sensorData.SetupMode ? "Настройка" : "Работа"
-                );
+                Debug.WriteLine($"Данные: {sensorData.DTT.Date}.{sensorData.DTT.Month}.{sensorData.DTT.Year} {sensorData.DTT.Hour}:{sensorData.DTT.Minute}:{sensorData.DTT.Second}, F1: {sensorData.CurrForce1}, F2: {sensorData.CurrForce2}, CurrQ1: {sensorData.CurrQ1}, CurrQ2: {sensorData.CurrQ2}, CurrPercent1: {sensorData.CurrPercent1}, CurrPercent2: {sensorData.CurrPercent2}, CurrWind: {sensorData.CurrWind}, Temperature: {sensorData.Temperature}, SetupMode: {sensorData.SetupMode}");
+                try
+                {
+                    dataGridView.Rows.Add(
+                        i.ToString(),
+                        $"{sensorData.DTT.Date}.{sensorData.DTT.Month}.{sensorData.DTT.Year} {sensorData.DTT.Hour}:{sensorData.DTT.Minute}:{sensorData.DTT.Second}",
+                        sensorData.CurrForce1.ToString() ?? "N/A",
+                        sensorData.CurrForce2.ToString() ?? "N/A",
+                        "N/A",
+                        sensorData.CurrQ1.ToString() ?? "N/A",
+                        sensorData.CurrQ2.ToString() ?? "N/A",
+                        "N/A",
+                        sensorData.CurrPercent1.ToString() ?? "N/A",
+                        sensorData.CurrPercent2.ToString() ?? "N/A",
+                        "N/A",
+                        sensorData.CurrWind.ToString() ?? "N/A",
+                        sensorData.Temperature ?? "N/A",
+                        sensorData.SetupMode ? "Настройка" : "Работа"
+                    );
+                }
+                catch (Exception ex)
+                {
+                }
                 i++;
-                // Вызовите метод для обновления интерфейса, если необходимо
-                Application.DoEvents(); // Это позволит обновить интерфейс
+                Application.DoEvents(); // Обновляет интерфейс после каждой итерации, но вызывает исключение System.InvalidOperationException которое не влияет на работу приложения 
             }
         }
 

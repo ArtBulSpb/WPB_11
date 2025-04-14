@@ -267,7 +267,7 @@ namespace WPB_11.Device
 
         public void ProcessTPCHRPacket(byte[] packetData)
         {
-            Debug.WriteLine($"ProcessTPCHRPacket вызван {BitConverter.ToString(packetData)}");
+            //Debug.WriteLine($"ProcessTPCHRPacket вызван {BitConverter.ToString(packetData)}");
             if (isUpdatingTable) return; // Если уже обновляется, выходим
 
             isUpdatingTable = true;
@@ -296,6 +296,7 @@ namespace WPB_11.Device
                 }
 
                 // Добавляем запрос в очередь
+                //Debug.WriteLine($"ReadKadrPacketProcess {ReadKadrPacket}");
                 requestQueue.Enqueue(ReadKadrPacket);
                 ReadKadrPacket++;
             }

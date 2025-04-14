@@ -33,12 +33,7 @@ namespace WPB_11.DataStructures
             // Конструктор, который принимает массив байтов
             public VPBCurrTypeStruct(byte[] packetData)
             {
-                if (packetData.Length < 28)
-                {
-                    Debug.WriteLine($"VPBCurrTypeStruct конструктор {BitConverter.ToString(packetData)}");
-                    //throw new ArgumentException("Недостаточная длина packetData. Ожидалось минимум 28 байт.");
-                }
-
+                
                 DTT = new VPBDateTimeTempStruct
                 {
                     Hour = BCDToDecimal(packetData[0]),    // Час
