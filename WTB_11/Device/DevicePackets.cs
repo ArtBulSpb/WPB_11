@@ -22,6 +22,7 @@ namespace WPB_11.Device
         public event Action<VPBCurrType.VPBCurrTypeStruct> DateTimeProcessed;
         public event Action<VPBCrane.VPBCraneStruct> VPBCraneProcessed;
         public event Action<VPBCurrType.VPBCurrTypeStruct[]> TPCHRProcessed;
+        public event Action<VPBCurrType.VPBCurrTypeStruct[]> TPProcessed;
 
         DateTime HighDateTime = new DateTime(1800, 01, 01, 0, 0, 0);
         DateTime LowDateTime = new DateTime(2400, 01, 01, 0, 0, 0);
@@ -306,7 +307,45 @@ namespace WPB_11.Device
         }
 
 
+        public void ProcessTPPacket(byte[] packetData)
+        {
+            //Debug.WriteLine($"ProcessTPCHRPacket вызван {BitConverter.ToString(packetData)}");
+            if (isUpdatingTable) return; // Если уже обновляется, выходим
 
+            isUpdatingTable = true;
+            RP.RPStruct rp = new RP.RPStruct();
+            rp.TPCHR = new VPBCurrType.VPBCurrTypeStruct[5449];
+
+            var TempTPCHRKadr = new byte[24];
+            int ReadKadrPacket = 0;
+
+            while (ReadKadrPacket < 544)
+            {
+                for (int I = 0; I < 10; I++)
+                {
+                    for (int j = 0; j < 24; j++)
+                    {
+                        TempTPCHRKadr[j] = (byte)packetData[4 + I * 24 + j];
+                    }
+
+                    int index = I + ReadKadrPacket * 10;
+
+                    if (index >= rp.TPCHR.Length)
+                    {
+                        break; // или завершите обработку
+                    }
+                    rp.TPCHR[index] = new VPBCurrType.VPBCurrTypeStruct(TempTPCHRKadr);
+                }
+
+                // Добавляем запрос в очередь
+                //Debug.WriteLine($"ReadKadrPacketProcess {ReadKadrPacket}");
+                requestQueue.Enqueue(ReadKadrPacket);
+                ReadKadrPacket++;
+            }
+            isUpdatingTable = false;
+            // Обработка события
+            TPCHRProcessed?.Invoke(rp.TPCHR);
+        }
 
 
         private int BCDToDecimal(byte bcd)
