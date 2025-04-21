@@ -6,3 +6,18 @@
 VisualStudio откроет проект, подтянет все файлы
 Устоновка завершена, для проверки нажимаем Ctrl +F5, приложение должно запуститься.
 
+Для компиляции проекта в .exe файл можно воспользоваться статьей https://ru.stackoverflow.com/questions/1282216/%D0%9A%D0%B0%D0%BA-%D1%81%D0%BA%D0%BE%D0%BC%D0%BF%D0%B8%D0%BB%D0%B8%D1%80%D0%BE%D0%B2%D0%B0%D1%82%D1%8C-%D0%B5%D0%B4%D0%B8%D0%BD%D1%8B%D0%B9-exe-%D1%84%D0%B0%D0%B9%D0%BB-%D0%B2-%D0%BF%D1%80%D0%BE%D0%B5%D0%BA%D1%82%D0%B5-visual-studio, там все довольно подробно описано.
+
+
+Структура проекта. Основные элементы и их описание:
+Папка DataStructs- содержит типы (реализованы как структуры) VPBCurrType, VPBCrane, VPBDateTimeTemp, VPBSensors, RP, SIM, MqttServer, MqttClient
+Папка Device- содержит классы для работы с устройством DeviceCommands (команды), DeviceConnector(управление подключением), DevicePackets(обработка пакетов), RequestQueue (очередь для запросов)
+Папка Fonts- содержит шрифты в формате otf
+Папка Img- содержит изображения
+Папка Reports- содержит шаблоны отчетов FastReport (обратите внимание, что из-за использования новой версии библиотеки FastReport, теперь формат отчета frx, а не fr3)
+Классы задающие внешний вид элементов интерфейса: ArrowButton.cs, CustomCheckedListBox.cs, CustomList,cs, DoubleLabel.cs, DoubleRoundedButton.cs, HistogramControl, roundedTextBox, SingleRoundedButton, TextBoxWithButton
+FontManager- класс для управления шрифтами
+Program.cs- точка входа в программу, в ней задается размер приложения, название, картинка. Так же в ней форма заполняется элементом tabcontrol1
+tabControl1.cs- класс, содержащих в себе внешний вид панели вкладок и сам набор вкладок, обрабатывает переход на вкладку. Так же в нем выводится состояние подключения прибора
+SensorDataRow.cs- класс, используемый при заполнении таблицы оперативной информации для хранения данных
+Вкладки tabCrane, TabCurrentValue, tabDevice, TabLongInform, TabOverload, TabShortInform, TabSettings- содержат внешний вид вкладок и соответствующую им логику
