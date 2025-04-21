@@ -14,7 +14,7 @@ VisualStudio откроет проект, подтянет все файлы
 Папка Device- содержит классы для работы с устройством DeviceCommands (команды), DeviceConnector(управление подключением), DevicePackets(обработка пакетов), RequestQueue (очередь для запросов)
 Папка Fonts- содержит шрифты в формате otf
 Папка Img- содержит изображения
-Папка Reports- содержит шаблоны отчетов FastReport (обратите внимание, что из-за использования новой версии библиотеки FastReport, теперь формат отчета frx, а не fr3)
+Папка Reports- содержит шаблоны отчетов FastReport (обратите внимание, что из-за использования новой версии библиотеки FastReport, теперь формат отчета frx, а не fr3), класс работы с отчетами VPBReports
 Классы задающие внешний вид элементов интерфейса: ArrowButton.cs, CustomCheckedListBox.cs, CustomList,cs, DoubleLabel.cs, DoubleRoundedButton.cs, HistogramControl, roundedTextBox, SingleRoundedButton, TextBoxWithButton
 FontManager- класс для управления шрифтами
 Program.cs- точка входа в программу, в ней задается размер приложения, название, картинка. Так же в ней форма заполняется элементом tabcontrol1
